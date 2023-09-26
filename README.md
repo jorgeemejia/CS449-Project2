@@ -1,7 +1,5 @@
 # course-manager api
 
-how to get course manager api running
-
 - create a venv ativate it then install the requirements
 
 `python -m venv myenv`
