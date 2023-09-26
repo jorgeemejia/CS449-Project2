@@ -21,7 +21,7 @@
 `python3 populate.py`
 
 
-- Optional
+# windows execution policy
 - if you are running this on a windows machine you may have to set the execution policy to run your virutal enviroment
 
 ` Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process`
