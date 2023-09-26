@@ -5,7 +5,9 @@ how to get course manager api running
 - create a venv ativate it then install the requirements
 
 python -m venv myenv
+
 myenv\Scripts\activate
+
 pip install -r requirements.txt
 
 
