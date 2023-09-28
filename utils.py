@@ -13,7 +13,6 @@ def delete_student(student_id: str):
 
     raise HTTPException(status_code=404, detail="Student not found")
 
-
 #delete a class
 @router.delete("/classes/{course_code}-{section_number}")
 def delete_class(course_code: str, section_number: str):
@@ -23,3 +22,15 @@ def delete_class(course_code: str, section_number: str):
             return {"message": "Class deleted successfully"}
 
     raise HTTPException(status_code=404, detail="Class not found")
+
+#Wip drop course
+
+# @router.delete("/classes/{student_id}")
+# def drop_course(student_id: str):
+#     # Find the student by student_id
+#     for student in students_db:
+#         if student.student_id == student_id:
+#             students_db.remove(student)
+#             return {"message": "Student deleted successfully"}
+
+#     raise HTTPException(status_code=404, detail="Student not found")

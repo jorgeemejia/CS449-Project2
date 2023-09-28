@@ -21,8 +21,13 @@ class Student(BaseModel):
     name: str
     student_id: str
 
+class Registrar(BaseModel):
+    name: str
+    registar_id: str
+
 classes_db = []
 students_db = []
+registrar_db = []
 
 @router.post("/classes/", response_model=Student)
 def create_class(class_data: Class):
@@ -53,4 +58,18 @@ def create_student(student_data: Student):
 def list_students():
     return students_db
 
+@router.post("/registrar/", response_model=Registrar)
+def create_registrar(student_data: Registrar):
+    # Check if a student with the same student_id already exists
+    for existing_registrar in registrar_db:
+        if existing_registrar.registar_id == registrar_data.registar_id:
+            raise HTTPException(status_code=400, detail="Registrar with this ID already exists")
+
+    registrar_db.append(registrar_data)
+    return registrar_data
+
+
+@router.get("/registrar/", response_model=List[Registrar])
+def list_registrars():
+    return registrar_data
 

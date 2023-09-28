@@ -78,6 +78,10 @@ sample_students = [
 
 ]
 
+sample_registrar = [
+    Registrar(name="John Smith", registar_id ="1")
+]
+
 # populates db
 def populate_database():
     try:
@@ -108,6 +112,15 @@ def populate_database():
                 VALUES (?, ?)
                 """,
                 (student_data.name, student_data.student_id),
+            )
+
+        for registrar_data in sample_registrar:
+            cursor.execute(
+                """
+                INSERT INTO students (name, registrar_id)
+                VALUES (?, ?)
+                """,
+                (registrar_data.name, registrar_data.registrar_id),
             )
 
         conn.commit()
