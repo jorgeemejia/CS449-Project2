@@ -30,3 +30,16 @@ class Student(StudentBase):
 
     class Config:
         orm_mode = True
+
+class RegistrarBase(BaseModel):
+    name: str
+    registar_id: str
+
+class RegistrarCreate(StudentBase):
+    pass
+
+class Registrar(StudentBase):
+    id: int
+
+    class Config:
+        orm_mode = True
