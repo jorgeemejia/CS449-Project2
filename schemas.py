@@ -35,10 +35,10 @@ class RegistrarBase(BaseModel):
     name: str
     registar_id: str
 
-class RegistrarCreate(StudentBase):
+class RegistrarCreate(RegistrarBase):
     pass
 
-class Registrar(StudentBase):
+class Registrar(RegistrarBase):
     id: int
 
     class Config:

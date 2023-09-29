@@ -44,6 +44,7 @@ def list_classes():
     return classes_db
 
 
+
 @router.post("/students/", response_model=Student)
 def create_student(student_data: Student):
     # Check if a student with the same student_id already exists
@@ -71,4 +72,5 @@ def create_registrar(registrar_data: Registrar):
 @router.get("/registrar/", response_model=List[Registrar])
 def list_registrars():
     return registrar_db
+
 
