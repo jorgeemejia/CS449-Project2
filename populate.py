@@ -1,5 +1,5 @@
 import sqlite3
-from schemas import Class, Student 
+from schemas import Class, Student, Registrar
 
 sample_classes = [
     Class(

@@ -4,7 +4,7 @@ from typing import List
 
 from fastapi import Depends, HTTPException, APIRouter
 from typing import List
-from schemas import Student, Class  # Import your schemas
+from schemas import Student, Class, Registrar  # Import your schemas
 
 router = APIRouter()
 
@@ -59,8 +59,8 @@ def list_students():
     return students_db
 
 @router.post("/registrar/", response_model=Registrar)
-def create_registrar(student_data: Registrar):
-    # Check if a student with the same student_id already exists
+def create_registrar(registrar_data: Registrar):
+    # Check if a registrar with the same student_id already exists
     for existing_registrar in registrar_db:
         if existing_registrar.registar_id == registrar_data.registar_id:
             raise HTTPException(status_code=400, detail="Registrar with this ID already exists")
@@ -68,8 +68,7 @@ def create_registrar(student_data: Registrar):
     registrar_db.append(registrar_data)
     return registrar_data
 
-
 @router.get("/registrar/", response_model=List[Registrar])
 def list_registrars():
-    return registrar_data
+    return registrar_db
 
