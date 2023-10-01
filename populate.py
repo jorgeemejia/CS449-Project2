@@ -117,7 +117,7 @@ def populate_database():
         for registrar_data in sample_registrar:
             cursor.execute(
                 """
-                INSERT INTO students (name, registrar_id)
+                INSERT INTO registrar (name, registrar_id)
                 VALUES (?, ?)
                 """,
                 (registrar_data.name, registrar_data.registrar_id),
