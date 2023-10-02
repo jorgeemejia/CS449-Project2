@@ -1,45 +1,31 @@
 from pydantic import BaseModel
 
-class ClassBase(BaseModel):
-    department: str
+class Department(BaseModel):
+    id: int
+    name: str
+
+class Instructor(BaseModel):
+    id: int
+    name: str
+
+class Class(BaseModel):
+    id: int
+    name: str
     course_code: str
     section_number: str
-    name: str
-    instructor: str
-    max_enrollment: int
+    current_enroll: int
+    max_enroll: int
+    #Decided to get fancy and use nested models,
+    #unsure if this is useful or not
+    department: Department | None = None
+    instructor: Instructor | None = None
 
-class ClassCreate(ClassBase):
-    pass
-
-class Class(ClassBase):
+class Student(BaseModel):
     id: int
-    current_enrollment: int
-
-    class Config:
-        orm_mode = True
-
-class StudentBase(BaseModel):
     name: str
-    student_id: str
 
-class StudentCreate(StudentBase):
-    pass
+class Waitlist(BaseModel):
+    class_id: int
+    student_id: int
+    placement: int
 
-class Student(StudentBase):
-    id: int
-
-    class Config:
-        orm_mode = True
-
-class RegistrarBase(BaseModel):
-    name: str
-    registar_id: str
-
-class RegistrarCreate(RegistrarBase):
-    pass
-
-class Registrar(RegistrarBase):
-    id: int
-
-    class Config:
-        orm_mode = True
