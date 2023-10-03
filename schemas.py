@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import List
 
 class Department(BaseModel):
     id: int
@@ -18,9 +19,11 @@ class Class(BaseModel):
     department_id: int
     instructor_id: int
 
+
 class Student(BaseModel):
     id: int
     name: str
+    enrolled_classes: List[Class] = [] 
 
 class Enrollment(BaseModel):
     placement: int
