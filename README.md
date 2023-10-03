@@ -11,7 +11,7 @@
 
 - then in the working directory run this command to run the uvicorn server
 
-`uvicorn main:app --host 0.0.0.0 --port 8000`
+`uvicorn main:app --host 0.0.0.0 --port 8000 --reload`
 
 - finally go to the following link to test the api
 
@@ -19,7 +19,7 @@
 
 - to populate the database with some sample data run populate.py
 `python3 populate.py`
-
+- always delete the 'database.db' file before populating the database
 
 # windows execution policy
 - if you are running this on a windows machine you may have to set the execution policy to run your virutal enviroment

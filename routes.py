@@ -4,7 +4,7 @@ from typing import Dict, List, Union
 
 from fastapi import Depends, HTTPException, APIRouter
 from typing import List
-from schemas import Student, Class, Department, Instructor, Waitlist   # Import your schemas
+from schemas import Student, Class, Department, Instructor, Enrollment   # Import your schemas
 
 router = APIRouter()
 instructors_db = []
@@ -82,7 +82,7 @@ def drop_student_from_class(id: int, class_id: int):
 
 #==========================================wait list========================================== 
 
-@router.get("/student/{student_id}/waitlist", response_model=List[Waitlist]) 
+@router.get("/student/{student_id}/waitlist", response_model=List[Enrollment]) 
 def view_waiting_list(student_id: int):
     student_waitlist = [waitlist for waitlist in waitlist_db if waitlist.student_id == student_id]
     return student_waitlist

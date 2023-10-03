@@ -16,10 +16,8 @@ class Class(BaseModel):
     section_number: str
     current_enroll: int
     max_enroll: int
-    #Decided to get fancy and use nested models,
-    #unsure if this is useful or not
-    department: Department | None = None
-    instructor: Instructor | None = None
+    department_id: int
+    instructor_id: int
 
 
 class Student(BaseModel):
@@ -27,8 +25,8 @@ class Student(BaseModel):
     name: str
     enrolled_classes: List[Class] = [] 
 
-class Waitlist(BaseModel):
+class Enrollment(BaseModel):
+    placement: int
     class_id: int
     student_id: int
-    placement: int
 
