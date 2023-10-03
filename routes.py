@@ -15,9 +15,6 @@ waitlist_db = []
 #==========================================students==================================================
 
 
-#TODO
-#currently need a better way to handle seeing available classes besides checking for capacity, 
-#for example, if a class is full students wont be able to see it and join waitlist
 
 #creates a student   
 @router.post("/students/", response_model=Student)
@@ -28,6 +25,11 @@ def create_student(student_data: Student):
 
     students_db.append(student_data)
     return student_data
+
+
+#TODO
+#currently need a better way to handle seeing available classes besides checking for capacity, 
+#for example, if a class is full students wont be able to see it and join waitlist
 
 #gets available classes for any student
 @router.get("/student/classes", response_model=List[Class])
