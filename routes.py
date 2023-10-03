@@ -4,7 +4,7 @@ from typing import List
 
 from fastapi import Depends, HTTPException, APIRouter
 from typing import List
-from schemas import Student, Class, Department, Instructor, Waitlist   # Import your schemas
+from schemas import Student, Class, Department, Instructor, Enrollment   # Import your schemas
 
 router = APIRouter()
 
