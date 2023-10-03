@@ -82,7 +82,7 @@ def drop_student_from_class(id: int, class_id: int):
 
 #==========================================wait list========================================== 
 
-@router.get("/student/{student_id}/waitlist", response_model=List[Waitlist]) 
+@router.get("/student/{student_id}/waitlist", response_model=List[Enrollment]) 
 def view_waiting_list(student_id: int):
     student_waitlist = [waitlist for waitlist in waitlist_db if waitlist.student_id == student_id]
     return student_waitlist
