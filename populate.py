@@ -1,6 +1,10 @@
 import sqlite3
+import os
 from schemas import Class, Student, Department, Instructor, Enrollment
 
+#Remove database if it exists before creating and populating it
+if os.path.exists("database.db"):
+    os.remove("database.db")
 
 sample_departments = [
     Department(id=1, name="CHEM"),
@@ -34,7 +38,7 @@ sample_classes = [
         name="Web Back-End Engineering",
         course_code="449",
         section_number="01",
-        current_enroll=25,
+        current_enroll=0,
         max_enroll=30,
         department_id=2,
         instructor_id=1,
@@ -44,7 +48,7 @@ sample_classes = [
         name="Web Front-End Engineering",
         course_code="349",
         section_number="02",
-        current_enroll=18,
+        current_enroll=0,
         max_enroll=30,
         department_id=2,
         instructor_id=1,
@@ -54,7 +58,7 @@ sample_classes = [
         name="Introduction to Computer Science",
         course_code="120",
         section_number="08",
-        current_enroll=30,
+        current_enroll=0,
         max_enroll=30,
         department_id=2,
         instructor_id=2,
@@ -64,7 +68,7 @@ sample_classes = [
         name="Calculus I",
         course_code="150",
         section_number="04",
-        current_enroll=12,
+        current_enroll=0,
         max_enroll=30,
         department_id=4,
         instructor_id=3,
@@ -74,7 +78,7 @@ sample_classes = [
         name="Calculus I",
         course_code="101",
         section_number="10",
-        current_enroll=32,
+        current_enroll=30,
         max_enroll=30,
         department_id=3,
         instructor_id=4,
@@ -264,7 +268,7 @@ def populate_database():
     query = "SELECT * FROM enrollment"
     print(query)
     select_query(conn, query)
-    
+
     conn.close()
 
     print("Database populated :D")
