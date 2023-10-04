@@ -2,6 +2,9 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import Dict, List, Union
 
+import contextlib
+import sqlite3
+
 from fastapi import Depends, HTTPException, APIRouter
 from typing import List
 from schemas import Student, Class, Department, Instructor, Enrollment   # Import your schemas
@@ -10,11 +13,46 @@ router = APIRouter()
 instructors_db = []
 classes_db = []
 students_db = []
-waitlist_db = []
+enroll_db = []
+
+database = "database.db"
+
+def get_db():
+    with contextlib.closing(sqlite3.connect(database)) as db:
+        db.row_factory = sqlite3.Row
+        yield db
 
 #==========================================students==================================================
 
+# A test enpoint that was used to test connecting to the DB
+# currently functions the same as @router.get("/student/classes", response_model=List[Class])
+# but uses join statements to get non full (current < max enroll) classes
+# For reference, only 1 class is full in the dummy data
+@router.get("/test")
+def test_get_available_classes(db: sqlite3.Connection = Depends(get_db)):
+    query = db.execute("""SELECT class.name, department.name, course_code, section_number, 
+                            instructor.name, current_enroll, max_enroll
+                            FROM class 
+                                INNER JOIN department ON department.id = class.department_id
+                                INNER JOIN instructor ON instructor.id = class.instructor_id
+                            WHERE current_enroll < max_enroll""")
+    rows = query.fetchall()
 
+    # Create a list of dictionaries, where each dictionary represents a row of data
+    classes = []
+    for row in rows:
+        class_name, department_name, course_code, section_number, instructor_name, current_enroll, max_enroll = row
+        classes.append({
+            "class_name": class_name,
+            "department_name": department_name,
+            "course_code": course_code,
+            "section_number": section_number,
+            "instructor_name": instructor_name,
+            "current_enroll": current_enroll,
+            "max_enroll": max_enroll
+        })
+    
+    return {"Classes": classes}
 
 #creates a student   
 @router.post("/students/", response_model=Student)
@@ -50,8 +88,8 @@ def enroll_student_in_class(id: int, class_id: int):
 
     # check class is full, add student to waitlist if so
     if target_class.current_enroll >= target_class.max_enroll:
-        waitlist_entry = Waitlist(class_id=class_id, student_id=id, placement=len(waitlist_db) + 1)
-        waitlist_db.append(waitlist_entry)
+        waitlist_entry = Enrollment(class_id=class_id, student_id=id, placement=len(enroll_db) + 1)
+        enroll_db.append(waitlist_entry)
         return {"message": "Student added to the waitlist"}
 
     # increment enrollment number
@@ -84,17 +122,17 @@ def drop_student_from_class(id: int, class_id: int):
 
 @router.get("/student/{student_id}/waitlist", response_model=List[Enrollment]) 
 def view_waiting_list(student_id: int):
-    student_waitlist = [waitlist for waitlist in waitlist_db if waitlist.student_id == student_id]
+    student_waitlist = [waitlist for waitlist in enroll_db if waitlist.student_id == student_id]
     return student_waitlist
 
 @router.put("/student/{student_id}/remove-from-waitlist/{class_id}") 
 def remove_from_waitlist(student_id: int, class_id: int):
     # Check if the student is on the waitlist for the specified class
-    waitlist_entry = next((entry for entry in waitlist_db if entry.student_id == student_id and entry.class_id == class_id), None)
+    waitlist_entry = next((entry for entry in enroll_db if entry.student_id == student_id and entry.class_id == class_id), None)
     if waitlist_entry is None:
         raise HTTPException(status_code=404, detail="Student is not on the waiting list for this class")
 
-    waitlist_db.remove(waitlist_entry)
+    enroll_db.remove(waitlist_entry)
 
     return {"message": "Student removed from the waiting list"}
 
