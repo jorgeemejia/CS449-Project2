@@ -19,7 +19,6 @@
 
 - to populate the database with some sample data run populate.py
 `python3 populate.py`
-- always delete the 'database.db' file before populating the database
 
 # windows execution policy
 - if you are running this on a windows machine you may have to set the execution policy to run your virutal enviroment
