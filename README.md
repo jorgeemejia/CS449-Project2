@@ -18,6 +18,7 @@
 `http://localhost:8000/docs` 
 
 - to populate the database with some sample data run populate.py
+
 `python3 populate.py`
 
 # windows execution policy
