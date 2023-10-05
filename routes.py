@@ -25,13 +25,6 @@ def get_db():
 #==========================================students==================================================
   
 #creates a student   
-<<<<<<< HEAD
-@router.post("/students/", response_model=Student, tags=['Student'])
-def create_student(student_data: Student):
-    for existing_student in students_db:
-        if existing_student.id == student_data.id:
-            raise HTTPException(status_code=400, detail="Student with this ID already exists")
-=======
 def create_student(student_data: Student, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
 
@@ -44,17 +37,12 @@ def create_student(student_data: Student, db: sqlite3.Connection = Depends(get_d
     cursor.execute("INSERT INTO student (id, name) VALUES (?, ?)", (student_data.id, student_data.name))
     db.commit()
     cursor.close()
->>>>>>> ce34cf4c3a607a099853eeeba15767c6fc5ae4c3
 
     return student_data
 
 #gets available classes for any student
 #USES DB
-<<<<<<< HEAD
-@router.get("/student/classes", tags=['Student'])
-=======
-@router.get("/student/classes", response_model=List[Class]) 
->>>>>>> ce34cf4c3a607a099853eeeba15767c6fc5ae4c3
+@router.get("/student/classes", response_model=List[Class], tags=['Student']) 
 def get_available_classes(db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
 
@@ -82,16 +70,8 @@ def get_available_classes(db: sqlite3.Connection = Depends(get_db)):
     return available_classes
 
 
-<<<<<<< HEAD
-@router.post("/student/{id}/enroll", response_model=Union[Class, Dict[str, str]], tags=['Student'])  
-def enroll_student_in_class(id: int, class_id: int):
-    # get student and class
-    student = next((std for std in students_db if std.id == id), None)
-    target_class = next((cls for cls in classes_db if cls.id == class_id), None)
-=======
->>>>>>> ce34cf4c3a607a099853eeeba15767c6fc5ae4c3
 
-@router.post("/student/{id}/enroll", response_model=Union[Class, Dict[str, str]])
+@router.post("/student/{id}/enroll", response_model=Union[Class, Dict[str, str]], tags=['Student'])
 def enroll_student_in_class(id: int, class_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
 
@@ -134,16 +114,9 @@ def enroll_student_in_class(id: int, class_id: int, db: sqlite3.Connection = Dep
 
 
 
-<<<<<<< HEAD
 @router.put("/student/{id}/drop/{class_id}", response_model=Class, tags=['Student'])
-def drop_student_from_class(id: int, class_id: int):
-    student = next((std for std in students_db if std.id == id), None)
-    target_class = next((cls for cls in classes_db if cls.id == class_id), None)
-=======
-@router.put("/student/{id}/drop/{class_id}", response_model=Class)
 def drop_student_from_class(id: int, class_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
->>>>>>> ce34cf4c3a607a099853eeeba15767c6fc5ae4c3
 
     # check if exist
     cursor.execute("SELECT * FROM student WHERE id = ?", (id,))
@@ -183,20 +156,7 @@ def drop_student_from_class(id: int, class_id: int, db: sqlite3.Connection = Dep
 
 #==========================================wait list========================================== 
 
-<<<<<<< HEAD
-@router.get("/student/{student_id}/waitlist", response_model=List[Enrollment], tags=['Waitlist']) 
-def view_waiting_list(student_id: int):
-    student_waitlist = [waitlist for waitlist in enroll_db if waitlist.student_id == student_id]
-    return student_waitlist
-
-@router.put("/student/{student_id}/remove-from-waitlist/{class_id}", tags=['Waitlist']) 
-def remove_from_waitlist(student_id: int, class_id: int):
-    # Check if the student is on the waitlist for the specified class
-    waitlist_entry = next((entry for entry in enroll_db if entry.student_id == student_id and entry.class_id == class_id), None)
-    if waitlist_entry is None:
-        raise HTTPException(status_code=404, detail="Student is not on the waiting list for this class")
-=======
-@router.get("/student/{student_id}/waitlist", response_model=List[Enrollment])
+@router.get("/student/{student_id}/waitlist", response_model=List[Enrollment], tags=['Waitlist'])
 def view_waiting_list(student_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
 
@@ -212,9 +172,8 @@ def view_waiting_list(student_id: int, db: sqlite3.Connection = Depends(get_db))
 
     return student_waitlist
 
->>>>>>> ce34cf4c3a607a099853eeeba15767c6fc5ae4c3
 
-@router.put("/student/{student_id}/remove-from-waitlist/{class_id}")
+@router.put("/student/{student_id}/remove-from-waitlist/{class_id}", tags=['Waitlist'])
 def remove_from_waitlist(student_id: int, class_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
 
@@ -233,38 +192,7 @@ def remove_from_waitlist(student_id: int, class_id: int, db: sqlite3.Connection 
 #==========================================classes==================================================
 
 #view current enrollment for class
-<<<<<<< HEAD
-@router.get("/instructor/{instructor_id}/enrollment", response_model=List[Class], tags=['Classes']) #works tested
-def get_instructor_enrollment(instructor_id: int):
-    instructor = next((inst for inst in instructors_db if inst.id == instructor_id), None)
-    if not instructor:
-        raise HTTPException(status_code=404, detail="Instructor not found")
-    
-    enrolled_classes = [cls for cls in classes_db if cls.instructor and cls.instructor.id == instructor_id]
-    return enrolled_classes
-
-#view students who have dropped the class
-@router.get("/instructor/{instructor_id}/dropped", response_model=List[Class], tags=['Classes'])
-def get_instructor_dropped(instructor_id: int):
-    instructor = next((inst for inst in instructors_db if inst.id == instructor_id), None)
-    if not instructor:
-        raise HTTPException(status_code=404, detail="Instructor not found")
-    
-    dropped_classes = [cls for cls in classes_db if cls.instructor and cls.instructor.id == instructor_id and cls.current_enroll < cls.max_enroll]
-    return dropped_classes
-
-#drop students
-@router.post("/instructor/{instructor_id}/drop", response_model=Class, tags=['Classes'])
-def instructor_drop_class(instructor_id: int, class_id: int):
-    instructor = next((inst for inst in instructors_db if inst.id == instructor_id), None)
-    if not instructor:
-        raise HTTPException(status_code=404, detail="Instructor not found")
-    
-    target_class = next((cls for cls in classes_db if cls.id == class_id and cls.instructor and cls.instructor.id == instructor_id), None)
-    if not target_class:
-        raise HTTPException(status_code=404, detail="Class not found or instructor is not teaching this class")
-=======
-@router.get("/instructor/{instructor_id}/enrollment", response_model=List[Class])
+@router.get("/instructor/{instructor_id}/enrollment", response_model=List[Class], tags=['Instructor'])
 def get_instructor_enrollment(instructor_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
 
@@ -285,7 +213,7 @@ def get_instructor_enrollment(instructor_id: int, db: sqlite3.Connection = Depen
     return enrolled_classes
 
 #view students who have dropped the class
-@router.get("/instructor/{instructor_id}/dropped", response_model=List[Class])
+@router.get("/instructor/{instructor_id}/dropped", response_model=List[Class], tags=['Instructor'])
 def get_instructor_dropped(instructor_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
 
@@ -306,7 +234,7 @@ def get_instructor_dropped(instructor_id: int, db: sqlite3.Connection = Depends(
     return dropped_classes
 
 #drop students
-@router.post("/instructor/{instructor_id}/drop", response_model=Class)
+@router.post("/instructor/{instructor_id}/drop", response_model=Class, tags=['Instructor'])
 def instructor_drop_class(instructor_id: int, class_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
 
@@ -323,7 +251,6 @@ def instructor_drop_class(instructor_id: int, class_id: int, db: sqlite3.Connect
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Class not found or instructor is not teaching this class")
 
     target_class = Class(**target_class_data)  
->>>>>>> ce34cf4c3a607a099853eeeba15767c6fc5ae4c3
 
     return target_class
 
@@ -358,14 +285,7 @@ def create_class(class_data: Class, db: sqlite3.Connection = Depends(get_db)):
             detail={"type": type(e).__name__, "msg": str(e)}
         )
 
-<<<<<<< HEAD
-@router.delete("/registrar/classes/{class_id}", tags=['Registrar']) 
-def remove_class(class_id: int):
-    target_class = next((cls for cls in classes_db if cls.id == class_id), None)
-    if target_class is None:
-        raise HTTPException(status_code=404, detail="Class not found")
-=======
-@router.delete("/registrar/classes/{class_id}")
+@router.delete("/registrar/classes/{class_id}", tags=['Registrar'])
 def remove_class(class_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
 
@@ -379,20 +299,11 @@ def remove_class(class_id: int, db: sqlite3.Connection = Depends(get_db)):
     # Delete the class from the database
     cursor.execute("DELETE FROM class WHERE id = ?", (class_id,))
     db.commit()
->>>>>>> ce34cf4c3a607a099853eeeba15767c6fc5ae4c3
 
     return {"message": "Class removed successfully"}
 
-<<<<<<< HEAD
-@router.put("/registrar/classes/{class_id}/instructor/{instructor_id}", tags=['Registrar']) 
-def change_instructor(class_id: int, instructor_id: int):
-    target_class = next((cls for cls in classes_db if cls.id == class_id), None)
-    if target_class is None:
-        raise HTTPException(status_code=404, detail="Class not found")
-=======
->>>>>>> ce34cf4c3a607a099853eeeba15767c6fc5ae4c3
 
-@router.put("/registrar/classes/{class_id}/instructor/{instructor_id}")
+@router.put("/registrar/classes/{class_id}/instructor/{instructor_id}", tags=['Registrar'])
 def change_instructor(class_id: int, instructor_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
 
@@ -413,20 +324,8 @@ def change_instructor(class_id: int, instructor_id: int, db: sqlite3.Connection 
 
     return {"message": "Instructor changed successfully"}
 
-<<<<<<< HEAD
-@router.put("/registrar/automatic-enrollment/freeze", tags=['Registrar'])
-=======
 
-@router.put("/registrar/automatic-enrollment/freeze")
->>>>>>> ce34cf4c3a607a099853eeeba15767c6fc5ae4c3
+@router.put("/registrar/automatic-enrollment/freeze", tags=['Registrar'])
 def freeze_automatic_enrollment():
     # TDOO implement this
     return {"message": "Automatic enrollment frozen successfully"}
-
-<<<<<<< HEAD
-
-@router.get("/classes/", response_model=List[Class], tags=['Classes'])
-def list_classes():
-    return classes_db
-=======
->>>>>>> ce34cf4c3a607a099853eeeba15767c6fc5ae4c3
