@@ -25,138 +25,235 @@ def get_db():
 #==========================================students==================================================
   
 #creates a student   
-@router.post("/students/", response_model=Student)
-def create_student(student_data: Student):
-    for existing_student in students_db:
-        if existing_student.id == student_data.id:
-            raise HTTPException(status_code=400, detail="Student with this ID already exists")
+def create_student(student_data: Student, db: sqlite3.Connection = Depends(get_db)):
+    cursor = db.cursor()
 
-    students_db.append(student_data)
+    cursor.execute("SELECT * FROM student WHERE id = ?", (student_data.id,))
+    existing_student = cursor.fetchone()
+    
+    if existing_student:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Student with this ID already exists")
+
+    cursor.execute("INSERT INTO student (id, name) VALUES (?, ?)", (student_data.id, student_data.name))
+    db.commit()
+    cursor.close()
+
     return student_data
 
 #gets available classes for any student
 #USES DB
-@router.get("/student/classes")
+@router.get("/student/classes", response_model=List[Class]) 
 def get_available_classes(db: sqlite3.Connection = Depends(get_db)):
-    query = db.execute("""SELECT class.name, department.name, course_code, section_number, 
-                            instructor.name, current_enroll, max_enroll
-                            FROM class 
-                                INNER JOIN department ON department.id = class.department_id
-                                INNER JOIN instructor ON instructor.id = class.instructor_id
-                            WHERE current_enroll < max_enroll""")
-    rows = query.fetchall()
+    cursor = db.cursor()
 
-    # Create a list of dictionaries, where each dictionary represents a row of data
-    classes = []
-    for row in rows:
-        class_name, department_name, course_code, section_number, instructor_name, current_enroll, max_enroll = row
-        classes.append({
-            "class_name": class_name,
-            "department_name": department_name,
-            "course_code": course_code,
-            "section_number": section_number,
-            "instructor_name": instructor_name,
-            "current_enroll": current_enroll,
-            "max_enroll": max_enroll
-        })
+    # Execute the SQL query to retrieve available classes
+    cursor.execute("""
+        SELECT class.id, class.name, class.course_code, class.section_number, class.current_enroll, class.max_enroll,
+               department.id AS department_id, department.name AS department_name,
+               instructor.id AS instructor_id, instructor.name AS instructor_name
+        FROM class
+        INNER JOIN department ON class.department_id = department.id
+        INNER JOIN instructor ON class.instructor_id = instructor.id
+        WHERE class.current_enroll < class.max_enroll
+    """)
     
-    return {"Classes": classes}
+    # Fetch all rows from the query result
+    rows = cursor.fetchall()
+
+    # Convert database rows into Class objects
+    available_classes = []
+    for row in rows:
+        class_data = dict(row)
+        class_instance = Class(**class_data)  # Assuming Class has attributes corresponding to database columns
+        available_classes.append(class_instance)
+
+    return available_classes
 
 
-@router.post("/student/{id}/enroll", response_model=Union[Class, Dict[str, str]])  
-def enroll_student_in_class(id: int, class_id: int):
-    # get student and class
-    student = next((std for std in students_db if std.id == id), None)
-    target_class = next((cls for cls in classes_db if cls.id == class_id), None)
 
-    # error handle 
-    if student is None or target_class is None:
-        raise HTTPException(status_code=404, detail="Student or Class not found")
+@router.post("/student/{id}/enroll", response_model=Union[Class, Dict[str, str]])
+def enroll_student_in_class(id: int, class_id: int, db: sqlite3.Connection = Depends(get_db)):
+    cursor = db.cursor()
 
-    # check class is full, add student to waitlist if so
-    if target_class.current_enroll >= target_class.max_enroll:
-        waitlist_entry = Enrollment(class_id=class_id, student_id=id, placement=len(enroll_db) + 1)
+    # Check if the student exists in the database
+    cursor.execute("SELECT * FROM student WHERE id = ?", (id,))
+    student_data = cursor.fetchone()
+
+    # Check if the class exists in the database
+    cursor.execute("SELECT * FROM class WHERE id = ?", (class_id,))
+    class_data = cursor.fetchone()
+
+    if not student_data or not class_data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Student or Class not found")
+
+    # Check if the class is full, add student to waitlist if so
+    if class_data['current_enroll'] >= class_data['max_enroll']:
+        placement = len(enroll_db) + 1
+        waitlist_entry = Enrollment(class_id=class_id, student_id=id, placement=placement)
         enroll_db.append(waitlist_entry)
         return {"message": "Student added to the waitlist"}
 
-    # increment enrollment number
-    target_class.current_enroll += 1
+    # Increment enrollment number in the database
+    new_enrollment = class_data['current_enroll'] + 1
+    cursor.execute("UPDATE class SET current_enroll = ? WHERE id = ?", (new_enrollment, class_id))
 
-    # add to enrolled class
-    student.enrolled_classes.append(target_class)
-    return target_class  
+    # Add student to enrolled class in the database
+    placement = None  # Set the placement to None for enrolled students
+    cursor.execute("INSERT INTO enrollment (placement, class_id, student_id) VALUES (?, ?, ?)", (placement, class_id, id))
+    db.commit()
+
+    # Fetch the updated class data from the database
+    cursor.execute("SELECT * FROM class WHERE id = ?", (class_id,))
+    updated_class_data = cursor.fetchone()
+
+    # Create a Class object from the updated class data
+    enrolled_class = Class(**updated_class_data)
+
+    return enrolled_class
+
 
 
 
 @router.put("/student/{id}/drop/{class_id}", response_model=Class)
-def drop_student_from_class(id: int, class_id: int):
-    student = next((std for std in students_db if std.id == id), None)
-    target_class = next((cls for cls in classes_db if cls.id == class_id), None)
+def drop_student_from_class(id: int, class_id: int, db: sqlite3.Connection = Depends(get_db)):
+    cursor = db.cursor()
 
-    if student is None or target_class is None:
-        raise HTTPException(status_code=404, detail="Student or Class not found")
+    # check if exist
+    cursor.execute("SELECT * FROM student WHERE id = ?", (id,))
+    student_data = cursor.fetchone()
 
-    if target_class not in student.enrolled_classes:
-        raise HTTPException(status_code=400, detail="Student is not enrolled in the class")
 
-    target_class.current_enroll -= 1
+    cursor.execute("SELECT * FROM class WHERE id = ?", (class_id,))
+    class_data = cursor.fetchone()
 
-    student.enrolled_classes.remove(target_class)
+    if not student_data or not class_data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Student or Class not found")
 
-    return target_class
+    #check enrollment
+    cursor.execute("SELECT * FROM enrollment WHERE student_id = ? AND class_id = ?", (id, class_id))
+    enrollment_data = cursor.fetchone()
+
+    if not enrollment_data:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Student is not enrolled in the class")
+
+    # decremenet enrollment
+    new_enrollment = class_data['current_enroll'] - 1
+    cursor.execute("UPDATE class SET current_enroll = ? WHERE id = ?", (new_enrollment, class_id))
+
+    # remove student from class
+    cursor.execute("DELETE FROM enrollment WHERE student_id = ? AND class_id = ?", (id, class_id))
+    db.commit()
+
+    # fetch from db
+    cursor.execute("SELECT * FROM class WHERE id = ?", (class_id,))
+    updated_class_data = cursor.fetchone()
+
+    # create class obj
+    updated_class = Class(**updated_class_data)
+
+    return updated_class
+
 
 #==========================================wait list========================================== 
 
-@router.get("/student/{student_id}/waitlist", response_model=List[Enrollment]) 
-def view_waiting_list(student_id: int):
-    student_waitlist = [waitlist for waitlist in enroll_db if waitlist.student_id == student_id]
+@router.get("/student/{student_id}/waitlist", response_model=List[Enrollment])
+def view_waiting_list(student_id: int, db: sqlite3.Connection = Depends(get_db)):
+    cursor = db.cursor()
+
+    # Retrieve waitlist entries for the specified student from the database
+    cursor.execute("SELECT * FROM waitlist WHERE student_id = ?", (student_id,))
+    waitlist_data = cursor.fetchall()
+
+    # Convert database rows into Enrollment objects
+    student_waitlist = []
+    for entry in waitlist_data:
+        waitlist_instance = Enrollment(**entry)  # Assuming Enrollment has attributes corresponding to database columns
+        student_waitlist.append(waitlist_instance)
+
     return student_waitlist
 
-@router.put("/student/{student_id}/remove-from-waitlist/{class_id}") 
-def remove_from_waitlist(student_id: int, class_id: int):
-    # Check if the student is on the waitlist for the specified class
-    waitlist_entry = next((entry for entry in enroll_db if entry.student_id == student_id and entry.class_id == class_id), None)
-    if waitlist_entry is None:
-        raise HTTPException(status_code=404, detail="Student is not on the waiting list for this class")
 
-    enroll_db.remove(waitlist_entry)
+@router.put("/student/{student_id}/remove-from-waitlist/{class_id}")
+def remove_from_waitlist(student_id: int, class_id: int, db: sqlite3.Connection = Depends(get_db)):
+    cursor = db.cursor()
+
+    cursor.execute("SELECT * FROM waitlist WHERE student_id = ? AND class_id = ?", (student_id, class_id))
+    waitlist_entry = cursor.fetchone()
+
+    if waitlist_entry is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Student is not on the waiting list for this class")
+
+    cursor.execute("DELETE FROM waitlist WHERE student_id = ? AND class_id = ?", (student_id, class_id))
+    db.commit()
 
     return {"message": "Student removed from the waiting list"}
+
 
 #==========================================classes==================================================
 
 #view current enrollment for class
-@router.get("/instructor/{instructor_id}/enrollment", response_model=List[Class]) #works tested
-def get_instructor_enrollment(instructor_id: int):
-    instructor = next((inst for inst in instructors_db if inst.id == instructor_id), None)
-    if not instructor:
-        raise HTTPException(status_code=404, detail="Instructor not found")
-    
-    enrolled_classes = [cls for cls in classes_db if cls.instructor and cls.instructor.id == instructor_id]
+@router.get("/instructor/{instructor_id}/enrollment", response_model=List[Class])
+def get_instructor_enrollment(instructor_id: int, db: sqlite3.Connection = Depends(get_db)):
+    cursor = db.cursor()
+
+    cursor.execute("SELECT * FROM instructor WHERE id = ?", (instructor_id,))
+    instructor_data = cursor.fetchone()
+
+    if not instructor_data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Instructor not found")
+
+    cursor.execute("SELECT * FROM class WHERE instructor_id = ?", (instructor_id,))
+    enrolled_classes_data = cursor.fetchall()
+
+    enrolled_classes = []
+    for class_data in enrolled_classes_data:
+        enrolled_class_instance = Class(**class_data)  
+        enrolled_classes.append(enrolled_class_instance)
+
     return enrolled_classes
 
 #view students who have dropped the class
 @router.get("/instructor/{instructor_id}/dropped", response_model=List[Class])
-def get_instructor_dropped(instructor_id: int):
-    instructor = next((inst for inst in instructors_db if inst.id == instructor_id), None)
-    if not instructor:
-        raise HTTPException(status_code=404, detail="Instructor not found")
-    
-    dropped_classes = [cls for cls in classes_db if cls.instructor and cls.instructor.id == instructor_id and cls.current_enroll < cls.max_enroll]
+def get_instructor_dropped(instructor_id: int, db: sqlite3.Connection = Depends(get_db)):
+    cursor = db.cursor()
+
+    cursor.execute("SELECT * FROM instructor WHERE id = ?", (instructor_id,))
+    instructor_data = cursor.fetchone()
+
+    if not instructor_data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Instructor not found")
+
+    cursor.execute("SELECT * FROM class WHERE instructor_id = ? AND current_enroll < max_enroll", (instructor_id,))
+    dropped_classes_data = cursor.fetchall()
+
+    dropped_classes = []
+    for class_data in dropped_classes_data:
+        dropped_class_instance = Class(**class_data)  
+        dropped_classes.append(dropped_class_instance)
+
     return dropped_classes
 
 #drop students
 @router.post("/instructor/{instructor_id}/drop", response_model=Class)
-def instructor_drop_class(instructor_id: int, class_id: int):
-    instructor = next((inst for inst in instructors_db if inst.id == instructor_id), None)
-    if not instructor:
-        raise HTTPException(status_code=404, detail="Instructor not found")
-    
-    target_class = next((cls for cls in classes_db if cls.id == class_id and cls.instructor and cls.instructor.id == instructor_id), None)
-    if not target_class:
-        raise HTTPException(status_code=404, detail="Class not found or instructor is not teaching this class")
+def instructor_drop_class(instructor_id: int, class_id: int, db: sqlite3.Connection = Depends(get_db)):
+    cursor = db.cursor()
+
+    cursor.execute("SELECT * FROM instructor WHERE id = ?", (instructor_id,))
+    instructor_data = cursor.fetchone()
+
+    if not instructor_data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Instructor not found")
+
+    cursor.execute("SELECT * FROM class WHERE id = ? AND instructor_id = ?", (class_id, instructor_id))
+    target_class_data = cursor.fetchone()
+
+    if not target_class_data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Class not found or instructor is not teaching this class")
+
+    target_class = Class(**target_class_data)  
 
     return target_class
+
 
 #==========================================registrar==================================================
 
@@ -188,30 +285,48 @@ def create_class(class_data: Class, db: sqlite3.Connection = Depends(get_db)):
             detail={"type": type(e).__name__, "msg": str(e)}
         )
 
-@router.delete("/registrar/classes/{class_id}") 
-def remove_class(class_id: int):
-    target_class = next((cls for cls in classes_db if cls.id == class_id), None)
-    if target_class is None:
-        raise HTTPException(status_code=404, detail="Class not found")
+@router.delete("/registrar/classes/{class_id}")
+def remove_class(class_id: int, db: sqlite3.Connection = Depends(get_db)):
+    cursor = db.cursor()
 
-    classes_db.remove(target_class)
+    # Check if the class exists in the database
+    cursor.execute("SELECT * FROM class WHERE id = ?", (class_id,))
+    target_class_data = cursor.fetchone()
+
+    if not target_class_data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Class not found")
+
+    # Delete the class from the database
+    cursor.execute("DELETE FROM class WHERE id = ?", (class_id,))
+    db.commit()
+
     return {"message": "Class removed successfully"}
 
-@router.put("/registrar/classes/{class_id}/instructor/{instructor_id}") 
-def change_instructor(class_id: int, instructor_id: int):
-    target_class = next((cls for cls in classes_db if cls.id == class_id), None)
-    if target_class is None:
-        raise HTTPException(status_code=404, detail="Class not found")
 
-    target_class.instructor.id = instructor_id
+@router.put("/registrar/classes/{class_id}/instructor/{instructor_id}")
+def change_instructor(class_id: int, instructor_id: int, db: sqlite3.Connection = Depends(get_db)):
+    cursor = db.cursor()
+
+    cursor.execute("SELECT * FROM class WHERE id = ?", (class_id,))
+    target_class_data = cursor.fetchone()
+
+    if not target_class_data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Class not found")
+
+    cursor.execute("SELECT * FROM instructor WHERE id = ?", (instructor_id,))
+    instructor_data = cursor.fetchone()
+
+    if not instructor_data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Instructor not found")
+
+    cursor.execute("UPDATE class SET instructor_id = ? WHERE id = ?", (instructor_id, class_id))
+    db.commit()
+
     return {"message": "Instructor changed successfully"}
+
 
 @router.put("/registrar/automatic-enrollment/freeze")
 def freeze_automatic_enrollment():
     # TDOO implement this
     return {"message": "Automatic enrollment frozen successfully"}
 
-
-@router.get("/classes/", response_model=List[Class])
-def list_classes():
-    return classes_db

@@ -178,13 +178,23 @@ def populate_database():
     create_table(conn, class_table)
     
     enrollment_table = """ CREATE TABLE IF NOT EXISTS enrollment (
-                            placement integer NOT NULL,
+                            placement integer,
                             class_id integer,
                             student_id integer,
                             FOREIGN KEY(class_id) REFERENCES class(id),
                             FOREIGN KEY(student_id) REFERENCES student(id)
                     ); """
     create_table(conn, enrollment_table)
+
+
+    waitlist_table ='''CREATE TABLE IF NOT EXISTS waitlist (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    class_id INTEGER NOT NULL,
+                    student_id INTEGER NOT NULL,
+                    FOREIGN KEY(class_id) REFERENCES class(id),
+                    FOREIGN KEY(student_id) REFERENCES student(id)
+                )'''
+    create_table(conn, waitlist_table)
 
     cursor = conn.cursor()
     for department_data in sample_departments:
