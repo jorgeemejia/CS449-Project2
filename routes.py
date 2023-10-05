@@ -5,7 +5,7 @@ from typing import Dict, List, Union
 import contextlib
 import sqlite3
 
-from fastapi import Depends, HTTPException, APIRouter
+from fastapi import Depends, HTTPException, APIRouter, Response, status
 from typing import List
 from schemas import Student, Class, Department, Instructor, Enrollment   # Import your schemas
 
@@ -18,18 +18,26 @@ enroll_db = []
 database = "database.db"
 
 def get_db():
-    with contextlib.closing(sqlite3.connect(database)) as db:
+    with contextlib.closing(sqlite3.connect(database, check_same_thread=False)) as db:
         db.row_factory = sqlite3.Row
         yield db
 
 #==========================================students==================================================
+  
+#creates a student   
+@router.post("/students/", response_model=Student)
+def create_student(student_data: Student):
+    for existing_student in students_db:
+        if existing_student.id == student_data.id:
+            raise HTTPException(status_code=400, detail="Student with this ID already exists")
 
-# A test enpoint that was used to test connecting to the DB
-# currently functions the same as @router.get("/student/classes", response_model=List[Class])
-# but uses join statements to get non full (current < max enroll) classes
-# For reference, only 1 class is full in the dummy data
-@router.get("/test")
-def test_get_available_classes(db: sqlite3.Connection = Depends(get_db)):
+    students_db.append(student_data)
+    return student_data
+
+#gets available classes for any student
+#USES DB
+@router.get("/student/classes")
+def get_available_classes(db: sqlite3.Connection = Depends(get_db)):
     query = db.execute("""SELECT class.name, department.name, course_code, section_number, 
                             instructor.name, current_enroll, max_enroll
                             FROM class 
@@ -53,27 +61,6 @@ def test_get_available_classes(db: sqlite3.Connection = Depends(get_db)):
         })
     
     return {"Classes": classes}
-
-#creates a student   
-@router.post("/students/", response_model=Student)
-def create_student(student_data: Student):
-    for existing_student in students_db:
-        if existing_student.id == student_data.id:
-            raise HTTPException(status_code=400, detail="Student with this ID already exists")
-
-    students_db.append(student_data)
-    return student_data
-
-
-#TODO
-#currently need a better way to handle seeing available classes besides checking for capacity, 
-#for example, if a class is full students wont be able to see it and join waitlist
-
-#gets available classes for any student
-@router.get("/student/classes", response_model=List[Class])
-def get_available_classes():
-    available_classes = [cls for cls in classes_db if cls.current_enroll < cls.max_enroll]
-    return available_classes
 
 
 @router.post("/student/{id}/enroll", response_model=Union[Class, Dict[str, str]])  
@@ -173,16 +160,33 @@ def instructor_drop_class(instructor_id: int, class_id: int):
 
 #==========================================registrar==================================================
 
-
+#USES DB
 @router.post("/registrar/classes/", response_model=Class)
-def create_class(class_data: Class):
-    for existing_class in classes_db:
-        if existing_class.course_code == class_data.course_code and existing_class.section_number == class_data.section_number:
-            raise HTTPException(status_code=400, detail="Class with this code and section already exists")
-
-    classes_db.append(class_data)
-    return class_data
-
+def create_class(class_data: Class, db: sqlite3.Connection = Depends(get_db)):
+    try:
+        db.execute(
+            """
+            INSERT INTO class (id, name, course_code, section_number, current_enroll, max_enroll, department_id, instructor_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                class_data.id,
+                class_data.name,
+                class_data.course_code,
+                class_data.section_number,
+                class_data.current_enroll,
+                class_data.max_enroll,
+                class_data.department_id,
+                class_data.instructor_id
+            )
+        )
+        db.commit()
+        return class_data
+    except sqlite3.IntegrityError as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={"type": type(e).__name__, "msg": str(e)}
+        )
 
 @router.delete("/registrar/classes/{class_id}") 
 def remove_class(class_id: int):
