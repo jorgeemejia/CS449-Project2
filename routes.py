@@ -25,7 +25,7 @@ def get_db():
 #==========================================students==================================================
   
 #creates a student   
-@router.post("/students/", response_model=Student)
+@router.post("/students/", response_model=Student, tags=['Student'])
 def create_student(student_data: Student):
     for existing_student in students_db:
         if existing_student.id == student_data.id:
@@ -36,7 +36,7 @@ def create_student(student_data: Student):
 
 #gets available classes for any student
 #USES DB
-@router.get("/student/classes")
+@router.get("/student/classes", tags=['Student'])
 def get_available_classes(db: sqlite3.Connection = Depends(get_db)):
     query = db.execute("""SELECT class.name, department.name, course_code, section_number, 
                             instructor.name, current_enroll, max_enroll
@@ -63,7 +63,7 @@ def get_available_classes(db: sqlite3.Connection = Depends(get_db)):
     return {"Classes": classes}
 
 
-@router.post("/student/{id}/enroll", response_model=Union[Class, Dict[str, str]])  
+@router.post("/student/{id}/enroll", response_model=Union[Class, Dict[str, str]], tags=['Student'])  
 def enroll_student_in_class(id: int, class_id: int):
     # get student and class
     student = next((std for std in students_db if std.id == id), None)
@@ -88,7 +88,7 @@ def enroll_student_in_class(id: int, class_id: int):
 
 
 
-@router.put("/student/{id}/drop/{class_id}", response_model=Class)
+@router.put("/student/{id}/drop/{class_id}", response_model=Class, tags=['Student'])
 def drop_student_from_class(id: int, class_id: int):
     student = next((std for std in students_db if std.id == id), None)
     target_class = next((cls for cls in classes_db if cls.id == class_id), None)
@@ -107,12 +107,12 @@ def drop_student_from_class(id: int, class_id: int):
 
 #==========================================wait list========================================== 
 
-@router.get("/student/{student_id}/waitlist", response_model=List[Enrollment]) 
+@router.get("/student/{student_id}/waitlist", response_model=List[Enrollment], tags=['Waitlist']) 
 def view_waiting_list(student_id: int):
     student_waitlist = [waitlist for waitlist in enroll_db if waitlist.student_id == student_id]
     return student_waitlist
 
-@router.put("/student/{student_id}/remove-from-waitlist/{class_id}") 
+@router.put("/student/{student_id}/remove-from-waitlist/{class_id}", tags=['Waitlist']) 
 def remove_from_waitlist(student_id: int, class_id: int):
     # Check if the student is on the waitlist for the specified class
     waitlist_entry = next((entry for entry in enroll_db if entry.student_id == student_id and entry.class_id == class_id), None)
@@ -126,7 +126,7 @@ def remove_from_waitlist(student_id: int, class_id: int):
 #==========================================classes==================================================
 
 #view current enrollment for class
-@router.get("/instructor/{instructor_id}/enrollment", response_model=List[Class]) #works tested
+@router.get("/instructor/{instructor_id}/enrollment", response_model=List[Class], tags=['Classes']) #works tested
 def get_instructor_enrollment(instructor_id: int):
     instructor = next((inst for inst in instructors_db if inst.id == instructor_id), None)
     if not instructor:
@@ -136,7 +136,7 @@ def get_instructor_enrollment(instructor_id: int):
     return enrolled_classes
 
 #view students who have dropped the class
-@router.get("/instructor/{instructor_id}/dropped", response_model=List[Class])
+@router.get("/instructor/{instructor_id}/dropped", response_model=List[Class], tags=['Classes'])
 def get_instructor_dropped(instructor_id: int):
     instructor = next((inst for inst in instructors_db if inst.id == instructor_id), None)
     if not instructor:
@@ -146,7 +146,7 @@ def get_instructor_dropped(instructor_id: int):
     return dropped_classes
 
 #drop students
-@router.post("/instructor/{instructor_id}/drop", response_model=Class)
+@router.post("/instructor/{instructor_id}/drop", response_model=Class, tags=['Classes'])
 def instructor_drop_class(instructor_id: int, class_id: int):
     instructor = next((inst for inst in instructors_db if inst.id == instructor_id), None)
     if not instructor:
@@ -161,7 +161,7 @@ def instructor_drop_class(instructor_id: int, class_id: int):
 #==========================================registrar==================================================
 
 #USES DB
-@router.post("/registrar/classes/", response_model=Class)
+@router.post("/registrar/classes/", response_model=Class, tags=['Registrar'])
 def create_class(class_data: Class, db: sqlite3.Connection = Depends(get_db)):
     try:
         db.execute(
@@ -188,7 +188,7 @@ def create_class(class_data: Class, db: sqlite3.Connection = Depends(get_db)):
             detail={"type": type(e).__name__, "msg": str(e)}
         )
 
-@router.delete("/registrar/classes/{class_id}") 
+@router.delete("/registrar/classes/{class_id}", tags=['Registrar']) 
 def remove_class(class_id: int):
     target_class = next((cls for cls in classes_db if cls.id == class_id), None)
     if target_class is None:
@@ -197,7 +197,7 @@ def remove_class(class_id: int):
     classes_db.remove(target_class)
     return {"message": "Class removed successfully"}
 
-@router.put("/registrar/classes/{class_id}/instructor/{instructor_id}") 
+@router.put("/registrar/classes/{class_id}/instructor/{instructor_id}", tags=['Registrar']) 
 def change_instructor(class_id: int, instructor_id: int):
     target_class = next((cls for cls in classes_db if cls.id == class_id), None)
     if target_class is None:
@@ -206,12 +206,12 @@ def change_instructor(class_id: int, instructor_id: int):
     target_class.instructor.id = instructor_id
     return {"message": "Instructor changed successfully"}
 
-@router.put("/registrar/automatic-enrollment/freeze")
+@router.put("/registrar/automatic-enrollment/freeze", tags=['Registrar'])
 def freeze_automatic_enrollment():
     # TDOO implement this
     return {"message": "Automatic enrollment frozen successfully"}
 
 
-@router.get("/classes/", response_model=List[Class])
+@router.get("/classes/", response_model=List[Class], tags=['Classes'])
 def list_classes():
     return classes_db
