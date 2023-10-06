@@ -42,7 +42,7 @@ def create_student(student_data: Student, db: sqlite3.Connection = Depends(get_d
 
 #gets available classes for any student
 #USES DB
-@router.get("/student/classes", response_model=List[Class]) 
+@router.get("/student/classes", response_model=List[Class], tags=['Student']) 
 def get_available_classes(db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
 
@@ -71,7 +71,7 @@ def get_available_classes(db: sqlite3.Connection = Depends(get_db)):
 
 
 
-@router.post("/student/{id}/enroll", response_model=Union[Class, Dict[str, str]])
+@router.post("/student/{id}/enroll", response_model=Union[Class, Dict[str, str]], tags=['Student'])
 def enroll_student_in_class(id: int, class_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
 
@@ -93,6 +93,13 @@ def enroll_student_in_class(id: int, class_id: int, db: sqlite3.Connection = Dep
         enroll_db.append(waitlist_entry)
         return {"message": "Student added to the waitlist"}
 
+    # Check if student is already enrolled in the class
+    cursor.execute("SELECT * FROM enrollment WHERE class_id = ? AND student_id = ?", (class_id, id))
+    existing_enrollment = cursor.fetchone()
+
+    if existing_enrollment:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Student is already enrolled in this class")
+    
     # Increment enrollment number in the database
     new_enrollment = class_data['current_enroll'] + 1
     cursor.execute("UPDATE class SET current_enroll = ? WHERE id = ?", (new_enrollment, class_id))
@@ -114,7 +121,7 @@ def enroll_student_in_class(id: int, class_id: int, db: sqlite3.Connection = Dep
 
 
 
-@router.put("/student/{id}/drop/{class_id}", response_model=Class)
+@router.put("/student/{id}/drop/{class_id}", response_model=Class, tags=['Student'])
 def drop_student_from_class(id: int, class_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
 
@@ -156,7 +163,7 @@ def drop_student_from_class(id: int, class_id: int, db: sqlite3.Connection = Dep
 
 #==========================================wait list========================================== 
 
-@router.get("/student/{student_id}/waitlist", response_model=List[Enrollment])
+@router.get("/student/{student_id}/waitlist", response_model=List[Enrollment], tags=['Waitlist'])
 def view_waiting_list(student_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
 
@@ -173,7 +180,7 @@ def view_waiting_list(student_id: int, db: sqlite3.Connection = Depends(get_db))
     return student_waitlist
 
 
-@router.put("/student/{student_id}/remove-from-waitlist/{class_id}")
+@router.put("/student/{student_id}/remove-from-waitlist/{class_id}", tags=['Waitlist'])
 def remove_from_waitlist(student_id: int, class_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
 
@@ -192,7 +199,7 @@ def remove_from_waitlist(student_id: int, class_id: int, db: sqlite3.Connection 
 #==========================================classes==================================================
 
 #view current enrollment for class
-@router.get("/instructor/{instructor_id}/enrollment", response_model=List[Class])
+@router.get("/instructor/{instructor_id}/enrollment", response_model=List[Class], tags=['Instructor'])
 def get_instructor_enrollment(instructor_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
 
@@ -213,7 +220,7 @@ def get_instructor_enrollment(instructor_id: int, db: sqlite3.Connection = Depen
     return enrolled_classes
 
 #view students who have dropped the class
-@router.get("/instructor/{instructor_id}/dropped", response_model=List[Class])
+@router.get("/instructor/{instructor_id}/dropped", response_model=List[Class], tags=['Instructor'])
 def get_instructor_dropped(instructor_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
 
@@ -234,7 +241,7 @@ def get_instructor_dropped(instructor_id: int, db: sqlite3.Connection = Depends(
     return dropped_classes
 
 #drop students
-@router.post("/instructor/{instructor_id}/drop", response_model=Class)
+@router.post("/instructor/{instructor_id}/drop", response_model=Class, tags=['Instructor'])
 def instructor_drop_class(instructor_id: int, class_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
 
@@ -258,7 +265,7 @@ def instructor_drop_class(instructor_id: int, class_id: int, db: sqlite3.Connect
 #==========================================registrar==================================================
 
 #USES DB
-@router.post("/registrar/classes/", response_model=Class)
+@router.post("/registrar/classes/", response_model=Class, tags=['Registrar'])
 def create_class(class_data: Class, db: sqlite3.Connection = Depends(get_db)):
     try:
         db.execute(
@@ -285,7 +292,7 @@ def create_class(class_data: Class, db: sqlite3.Connection = Depends(get_db)):
             detail={"type": type(e).__name__, "msg": str(e)}
         )
 
-@router.delete("/registrar/classes/{class_id}")
+@router.delete("/registrar/classes/{class_id}", tags=['Registrar'])
 def remove_class(class_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
 
@@ -303,7 +310,7 @@ def remove_class(class_id: int, db: sqlite3.Connection = Depends(get_db)):
     return {"message": "Class removed successfully"}
 
 
-@router.put("/registrar/classes/{class_id}/instructor/{instructor_id}")
+@router.put("/registrar/classes/{class_id}/instructor/{instructor_id}", tags=['Registrar'])
 def change_instructor(class_id: int, instructor_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
 
@@ -325,8 +332,7 @@ def change_instructor(class_id: int, instructor_id: int, db: sqlite3.Connection 
     return {"message": "Instructor changed successfully"}
 
 
-@router.put("/registrar/automatic-enrollment/freeze")
+@router.put("/registrar/automatic-enrollment/freeze", tags=['Registrar'])
 def freeze_automatic_enrollment():
     # TDOO implement this
     return {"message": "Automatic enrollment frozen successfully"}
-
