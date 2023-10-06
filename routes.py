@@ -41,21 +41,40 @@ def create_student(student_data: Student, db: sqlite3.Connection = Depends(get_d
     return student_data
 
 #gets available classes for any student
-#USES DB
-@router.get("/student/classes", response_model=List[Class], tags=['Student']) 
-def get_available_classes(db: sqlite3.Connection = Depends(get_db)):
+@router.get("/student/{id}/classes", response_model=List[Class], tags=['Student']) 
+def get_available_classes(id = int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
-
+    # Fetch student data from db
+    cursor.execute(
+        """
+        SELECT * FROM student
+        WHERE id = ?
+        """, (id,)
+    )
+    student_data = cursor.fetchone()
     # Execute the SQL query to retrieve available classes
-    cursor.execute("""
-        SELECT class.id, class.name, class.course_code, class.section_number, class.current_enroll, class.max_enroll,
-               department.id AS department_id, department.name AS department_name,
-               instructor.id AS instructor_id, instructor.name AS instructor_name
-        FROM class
-        INNER JOIN department ON class.department_id = department.id
-        INNER JOIN instructor ON class.instructor_id = instructor.id
-        WHERE class.current_enroll < class.max_enroll
-    """)
+    # If max waitlist, don't show full classes with open waitlists
+    if student_data['waitlist_count'] >= 3:
+        cursor.execute("""
+            SELECT class.id, class.name, class.course_code, class.section_number, class.current_enroll, class.max_enroll,
+                department.id AS department_id, department.name AS department_name,
+                instructor.id AS instructor_id, instructor.name AS instructor_name
+            FROM class
+            INNER JOIN department ON class.department_id = department.id
+            INNER JOIN instructor ON class.instructor_id = instructor.id
+            WHERE class.current_enroll < class.max_enroll   
+        """)
+    # Else show all open classes or full classes with open waitlists
+    else:
+        cursor.execute("""
+            SELECT class.id, class.name, class.course_code, class.section_number, class.current_enroll, class.max_enroll,
+                department.id AS department_id, department.name AS department_name,
+                instructor.id AS instructor_id, instructor.name AS instructor_name
+            FROM class
+            INNER JOIN department ON class.department_id = department.id
+            INNER JOIN instructor ON class.instructor_id = instructor.id
+            WHERE class.current_enroll < class.max_enroll + 15   
+        """)
     
     # Fetch all rows from the query result
     rows = cursor.fetchall()
@@ -170,6 +189,10 @@ def view_waiting_list(student_id: int, db: sqlite3.Connection = Depends(get_db))
     # Retrieve waitlist entries for the specified student from the database
     cursor.execute("SELECT * FROM waitlist WHERE student_id = ?", (student_id,))
     waitlist_data = cursor.fetchall()
+
+    # Check if exist
+    if not waitlist_data:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Student is not on a waitlist")  
 
     # Convert database rows into Enrollment objects
     student_waitlist = []
