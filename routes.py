@@ -170,6 +170,10 @@ def view_waiting_list(student_id: int, db: sqlite3.Connection = Depends(get_db))
     cursor.execute("SELECT * FROM waitlist WHERE student_id = ?", (student_id,))
     waitlist_data = cursor.fetchall()
 
+    # Check if exist
+    if not waitlist_data:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Student is not on a waitlist")  
+
     # Convert database rows into Enrollment objects
     student_waitlist = []
     for entry in waitlist_data:
