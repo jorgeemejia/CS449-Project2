@@ -187,6 +187,36 @@ sample_classes = [
         department_id=2,
         instructor_id=11,
     ),
+    Class(
+        id=12,
+        name="Python Programming",
+        course_code="222",
+        section_number=2,
+        current_enroll=45,
+        max_enroll=30,
+        department_id=2,
+        instructor_id=12,
+    ),
+    Class(
+        id=13,
+        name="Python Programming",
+        course_code="222",
+        section_number=3,
+        current_enroll=35,
+        max_enroll=30,
+        department_id=2,
+        instructor_id=13,
+    ),
+    Class(
+        id=14,
+        name="Python Programming",
+        course_code="222",
+        section_number=4,
+        current_enroll=44,
+        max_enroll=30,
+        department_id=2,
+        instructor_id=14,
+    ),
 ]
 
 sample_enrollments = []
