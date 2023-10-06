@@ -93,6 +93,13 @@ def enroll_student_in_class(id: int, class_id: int, db: sqlite3.Connection = Dep
         enroll_db.append(waitlist_entry)
         return {"message": "Student added to the waitlist"}
 
+    # Check if student is already enrolled in the class
+    cursor.execute("SELECT * FROM enrollment WHERE class_id = ? AND student_id = ?", (class_id, id))
+    existing_enrollment = cursor.fetchone()
+
+    if existing_enrollment:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Student is already enrolled in this class")
+    
     # Increment enrollment number in the database
     new_enrollment = class_data['current_enroll'] + 1
     cursor.execute("UPDATE class SET current_enroll = ? WHERE id = ?", (new_enrollment, class_id))
