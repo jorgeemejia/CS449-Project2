@@ -15,7 +15,7 @@
 
 - finally go to the following link to test the api
 
-`http://localhost:8000/docs` 
+`http://localhost:5000/docs` 
 
 - to populate the database with some sample data run populate.py
 
