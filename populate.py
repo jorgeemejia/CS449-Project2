@@ -1,5 +1,6 @@
 import sqlite3
 import os
+import itertools
 from schemas import Class, Student, Department, Instructor, Enrollment, Waitlist
 
 #Remove database if it exists before creating and populating it
@@ -312,7 +313,8 @@ def populate_database():
 
     student_table = """ CREATE TABLE IF NOT EXISTS student (
                             id integer NOT NULL PRIMARY KEY UNIQUE,
-                            name text NOT NULL
+                            name text NOT NULL,
+                            waitlist_count integer
                         ); """
     create_table(conn, student_table)
 
@@ -371,10 +373,10 @@ def populate_database():
     for index, student_name in enumerate(name[:500:], start = 1):
         cursor.execute(
             """
-            INSERT INTO student (id, name)
-            VALUES (?, ?)
+            INSERT INTO student (id, name, waitlist_count)
+            VALUES (?, ?, ?)
             """,
-            (index, student_name)
+            (index, student_name, 0)
         )
 
     for class_data in sample_classes:
@@ -396,6 +398,14 @@ def populate_database():
         )
 
     for enrollment_data in sample_enrollments:
+        if enrollment_data.placement > 30:
+            cursor.execute(
+                """
+                UPDATE student SET waitlist_count = 1
+                WHERE id = (?)
+                """,
+                (enrollment_data.student_id,)
+            )
         cursor.execute(
             """
             INSERT INTO enrollment (placement, class_id, student_id)
@@ -420,6 +430,40 @@ def populate_database():
             waitlist_data.student_id
             )
         )
+    
+    #Update more tables for testing purposes
+    #Have student id = 1 have max number of waitlists
+    cursor.execute(
+        """
+        UPDATE class SET current_enroll = 33
+        WHERE id = 4
+        """
+    )
+    cursor.execute(
+        """
+        INSERT INTO enrollment (placement, class_id, student_id)
+        VALUES (33, 4, 1)
+        """
+    )
+    cursor.execute(
+        """
+        UPDATE class SET current_enroll = 36
+        WHERE id = 13
+        """
+    )
+    cursor.execute(
+        """
+        INSERT INTO enrollment (placement, class_id, student_id)
+        VALUES (36, 13, 1)
+        """
+    )
+    cursor.execute(
+        """
+        UPDATE student SET waitlist_count = 3
+        WHERE id = 1
+        """
+    )
+
 
     conn.commit()
     cursor.close()
