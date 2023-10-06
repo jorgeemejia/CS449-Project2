@@ -41,7 +41,6 @@ def create_student(student_data: Student, db: sqlite3.Connection = Depends(get_d
     return student_data
 
 #gets available classes for any student
-#USES DB
 @router.get("/student/classes", response_model=List[Class], tags=['Student']) 
 def get_available_classes(db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
@@ -54,7 +53,7 @@ def get_available_classes(db: sqlite3.Connection = Depends(get_db)):
         FROM class
         INNER JOIN department ON class.department_id = department.id
         INNER JOIN instructor ON class.instructor_id = instructor.id
-        WHERE class.current_enroll < class.max_enroll
+        WHERE class.current_enroll < class.max_enroll + 15
     """)
     
     # Fetch all rows from the query result
