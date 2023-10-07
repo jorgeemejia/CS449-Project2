@@ -1,6 +1,6 @@
 import sqlite3
 import os
-from schemas import Class, Department, Enrollment, Waitlist
+from schemas import Class, Department, Enrollment, Dropped
 
 #Remove database if it exists before creating and populating it
 if os.path.exists("database.db"):
@@ -192,10 +192,10 @@ sample_classes = [
 ]
 
 sample_enrollments = []
-place = 0
-sid = 0
+place = 1
+sid = 1
 for class_data in sample_classes:
-    while place < class_data.current_enroll:
+    while place <= class_data.current_enroll:
         sample_enrollments.append(Enrollment(
             placement=place,
             class_id=class_data.id,
@@ -203,28 +203,24 @@ for class_data in sample_classes:
         ))
         sid += 1
         place += 1
-    place = 0
+    place = 1
 
-sample_waitlists = [
-    Waitlist(
-        id=1,
-        class_id=7,
-        student_id=8,
+sample_dropped = [
+    Dropped(
+        class_id=2,
+        student_id=1,
     ),
-    Waitlist(
-        id=2,
-        class_id=7,
-        student_id=9,
+    Dropped(
+        class_id=2,
+        student_id=2,
     ),
-    Waitlist(
-        id=3,
-        class_id=7,
-        student_id=10,
+    Dropped(
+        class_id=2,
+        student_id=3,
     ),
-    Waitlist(
-        id=4,
-        class_id=7,
-        student_id=11,
+    Dropped(
+        class_id=2,
+        student_id=4,
     ),
 ]
 
@@ -313,14 +309,13 @@ def populate_database():
     create_table(conn, enrollment_table)
 
 
-    waitlist_table ='''CREATE TABLE IF NOT EXISTS waitlist (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    dropped_table ="""CREATE TABLE IF NOT EXISTS dropped (
                     class_id INTEGER NOT NULL,
                     student_id INTEGER NOT NULL,
                     FOREIGN KEY(class_id) REFERENCES class(id),
                     FOREIGN KEY(student_id) REFERENCES student(id)
-                )'''
-    create_table(conn, waitlist_table)
+                )"""
+    create_table(conn, dropped_table)
 
     cursor = conn.cursor()
     for department_data in sample_departments:
@@ -389,16 +384,15 @@ def populate_database():
             )
         )
 
-    for waitlist_data in sample_waitlists:
+    for dropped_data in sample_dropped:
         cursor.execute(
             """
-            INSERT INTO waitlist (id, class_id, student_id)
-            VALUES (?, ?, ?)
+            INSERT INTO dropped (class_id, student_id)
+            VALUES (?, ?)
             """,
             (
-            waitlist_data.id,
-            waitlist_data.class_id,
-            waitlist_data.student_id
+            dropped_data.class_id,
+            dropped_data.student_id
             )
         )
     
