@@ -1,7 +1,6 @@
 import sqlite3
 import os
-import itertools
-from schemas import Class, Student, Department, Instructor, Enrollment, Waitlist
+from schemas import Class, Department, Enrollment, Waitlist
 
 #Remove database if it exists before creating and populating it
 if os.path.exists("database.db"):
@@ -47,34 +46,6 @@ sample_departments = [
     Department(id=6, name="HIST"),
     Department(id=7, name="BIOL"),
     Department(id=8, name="GEOL"),
-]
-
-sample_instructors = [
-    Instructor(id=1, name="Kennyt Avery"),
-    Instructor(id=2, name="John Smith"),
-    Instructor(id=3, name="Jane Doe"),
-    Instructor(id=4, name="Mike Hawk"),
-    Instructor(id=5, name="Margaret Hamilton"),
-    Instructor(id=6, name="Grace Hopper"),
-    Instructor(id=7, name="Ada Lovelace"),
-    Instructor(id=8, name="Bjarne Stroustrup"),
-    Instructor(id=9, name="Guido van Rossum"),
-]
-
-sample_students = [
-    Student(id=1, name="Homer Simpson"),
-    Student(id=2, name="Philly J. Fry"),
-    Student(id=3, name="Angel Santoyo"),
-    Student(id=4, name="David Carlson"),
-    Student(id=5, name="Steve Smith"),
-    Student(id=6, name="Bob Taylor"),
-    Student(id=7, name="Joe Schmoe"),
-    Student(id=8, name="Michael Carey"),
-    Student(id=9, name="Kobe Bryant"),
-    Student(id=10, name="Cesar Gutierrez"),
-    Student(id=11, name="Lebron James"),
-    Student(id=12, name="Larry Page"),
-    Student(id=13, name="Sergey Brin"),
 ]
 
 sample_classes = [
@@ -435,6 +406,18 @@ def populate_database():
     #Have student id = 1 have max number of waitlists
     cursor.execute(
         """
+        UPDATE class SET current_enroll = 31
+        WHERE id = 8
+        """
+    )
+    cursor.execute(
+        """
+        INSERT INTO enrollment (placement, class_id, student_id)
+        VALUES (31, 8, 1)
+        """
+    )
+    cursor.execute(
+        """
         UPDATE class SET current_enroll = 33
         WHERE id = 4
         """
@@ -464,35 +447,8 @@ def populate_database():
         """
     )
 
-
     conn.commit()
     cursor.close()
-    print("--- test to see if population worked ---")
-
-    query = "SELECT * FROM department"
-    print(query)
-    select_query(conn, query)
-
-    query = "SELECT * FROM instructor"
-    print(query)
-    select_query(conn, query)
-
-    query = "SELECT * FROM student"
-    print(query)
-    select_query(conn, query)
-
-    query = "SELECT * FROM class"
-    print(query)
-    select_query(conn, query)
-
-    query = "SELECT * FROM enrollment"
-    print(query)
-    select_query(conn, query)
-
-    query = "SELECT * FROM waitlist"
-    print(query)
-    select_query(conn, query)
-
     conn.close()
 
     print("Database populated :D")
