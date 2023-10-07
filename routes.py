@@ -15,6 +15,7 @@ classes_db = []
 students_db = []
 enroll_db = []
 
+MAX_WAITLIST = 3
 database = "database.db"
 
 def get_db():
@@ -40,7 +41,7 @@ def create_student(student_data: Student, db: sqlite3.Connection = Depends(get_d
 
     return student_data
 
-#gets available classes for any student
+#gets available classes for a student
 @router.get("/student/{id}/classes", response_model=List[Class], tags=['Student']) 
 def get_available_classes(id = int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
@@ -54,7 +55,7 @@ def get_available_classes(id = int, db: sqlite3.Connection = Depends(get_db)):
     student_data = cursor.fetchone()
     # Execute the SQL query to retrieve available classes
     # If max waitlist, don't show full classes with open waitlists
-    if student_data['waitlist_count'] >= 3:
+    if student_data['waitlist_count'] >= MAX_WAITLIST:
         cursor.execute("""
             SELECT class.id, class.name, class.course_code, class.section_number, class.current_enroll, class.max_enroll,
                 department.id AS department_id, department.name AS department_name,
@@ -88,8 +89,36 @@ def get_available_classes(id = int, db: sqlite3.Connection = Depends(get_db)):
 
     return available_classes
 
+#gets currently enrolled classes for a student
+@router.get("/student/{id}/enrolled", tags=['Student'])
+def view_enrolled_classes(id: int, db: sqlite3.Connection = Depends(get_db)):
+    cursor = db.cursor()
+    
+    # Check if the student exists in the database
+    cursor.execute("SELECT * FROM student WHERE id = ?", (id,))
+    student_data = cursor.fetchone()
 
+    if not student_data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Student not found")
 
+    # Check if the student is enrolled in any classes
+    cursor.execute("""
+        SELECT department.name AS department_name, class.course_code, class.section_number, class.name AS class_name, class.current_enroll
+            FROM enrollment
+            JOIN class ON enrollment.class_id = class.id
+            JOIN student ON enrollment.student_id = student.id
+            JOIN department ON class.department_id = department.id
+            WHERE student.id = ? AND class.current_enroll < class.max_enroll
+        """, (id,))
+    student_data = cursor.fetchall()
+    
+    if not student_data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Student not enrolled in any classes")
+    
+    return {"Enrolled": student_data}
+
+# Enrolls a student into an available class,
+# or will automatically put the student on an open waitlist for a full class
 @router.post("/student/{id}/enroll", response_model=Union[Class, Dict[str, str]], tags=['Student'])
 def enroll_student_in_class(id: int, class_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
@@ -137,9 +166,7 @@ def enroll_student_in_class(id: int, class_id: int, db: sqlite3.Connection = Dep
 
     return enrolled_class
 
-
-
-
+# Have a student drop a class they're enrolled in
 @router.put("/student/{id}/drop/{class_id}", response_model=Class, tags=['Student'])
 def drop_student_from_class(id: int, class_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
@@ -182,25 +209,32 @@ def drop_student_from_class(id: int, class_id: int, db: sqlite3.Connection = Dep
 
 #==========================================wait list========================================== 
 
-@router.get("/student/{student_id}/waitlist", response_model=List[Enrollment], tags=['Waitlist'])
+@router.get("/student/{student_id}/waitlist", tags=['Waitlist'])
 def view_waiting_list(student_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
 
     # Retrieve waitlist entries for the specified student from the database
-    cursor.execute("SELECT * FROM waitlist WHERE student_id = ?", (student_id,))
+    cursor.execute("SELECT waitlist_count FROM student WHERE id = ? AND waitlist_count > 0", (student_id,))
     waitlist_data = cursor.fetchall()
 
     # Check if exist
     if not waitlist_data:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Student is not on a waitlist")  
 
-    # Convert database rows into Enrollment objects
-    student_waitlist = []
-    for entry in waitlist_data:
-        waitlist_instance = Enrollment(**entry)  # Assuming Enrollment has attributes corresponding to database columns
-        student_waitlist.append(waitlist_instance)
+    # fetch all relevant waitlist information for student
+    cursor.execute("""
+        SELECT department.name AS department_name, class.course_code, 
+        class.section_number, class.name AS class_name, enrollment.placement - class.max_enroll AS waitlist_placement
+        FROM enrollment
+        JOIN class ON enrollment.class_id = class.id
+        JOIN student ON enrollment.student_id = student.id
+        JOIN department ON class.department_id = department.id
+        WHERE student.id = ? AND class.current_enroll > class.max_enroll
+        """, (student_id,)
+    )
+    waitlist_data = cursor.fetchall()
 
-    return student_waitlist
+    return {"Waitlists": waitlist_data}
 
 
 @router.put("/student/{student_id}/remove-from-waitlist/{class_id}", tags=['Waitlist'])
