@@ -51,21 +51,10 @@ def show_db(c):
     print('\n'+query)
     select_query(c, query)
 
-    query = "SELECT * FROM waitlist"
+    query = "SELECT * FROM dropped"
     print('\n'+query)
     select_query(c, query)
 
-    query = """
-            SELECT department.name AS department_name, class.course_code, 
-            class.section_number, class.name AS class_name, enrollment.placement - class.max_enroll AS waitlist_placement
-            FROM enrollment
-            JOIN class ON enrollment.class_id = class.id
-            JOIN student ON enrollment.student_id = student.id
-            JOIN department ON class.department_id = department.id
-            WHERE student.id = 1 AND class.current_enroll > class.max_enroll
-            """
-    print('\n'+query)
-    select_query(c, query)
 
 def start():
     database = "database.db"
