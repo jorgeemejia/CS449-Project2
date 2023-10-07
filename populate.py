@@ -1,7 +1,6 @@
 import sqlite3
 import os
-import itertools
-from schemas import Class, Student, Department, Instructor, Enrollment, Waitlist
+from schemas import Class, Department, Enrollment, Dropped
 
 #Remove database if it exists before creating and populating it
 if os.path.exists("database.db"):
@@ -47,34 +46,6 @@ sample_departments = [
     Department(id=6, name="HIST"),
     Department(id=7, name="BIOL"),
     Department(id=8, name="GEOL"),
-]
-
-sample_instructors = [
-    Instructor(id=1, name="Kennyt Avery"),
-    Instructor(id=2, name="John Smith"),
-    Instructor(id=3, name="Jane Doe"),
-    Instructor(id=4, name="Mike Hawk"),
-    Instructor(id=5, name="Margaret Hamilton"),
-    Instructor(id=6, name="Grace Hopper"),
-    Instructor(id=7, name="Ada Lovelace"),
-    Instructor(id=8, name="Bjarne Stroustrup"),
-    Instructor(id=9, name="Guido van Rossum"),
-]
-
-sample_students = [
-    Student(id=1, name="Homer Simpson"),
-    Student(id=2, name="Philly J. Fry"),
-    Student(id=3, name="Angel Santoyo"),
-    Student(id=4, name="David Carlson"),
-    Student(id=5, name="Steve Smith"),
-    Student(id=6, name="Bob Taylor"),
-    Student(id=7, name="Joe Schmoe"),
-    Student(id=8, name="Michael Carey"),
-    Student(id=9, name="Kobe Bryant"),
-    Student(id=10, name="Cesar Gutierrez"),
-    Student(id=11, name="Lebron James"),
-    Student(id=12, name="Larry Page"),
-    Student(id=13, name="Sergey Brin"),
 ]
 
 sample_classes = [
@@ -221,10 +192,10 @@ sample_classes = [
 ]
 
 sample_enrollments = []
-place = 0
-sid = 0
+place = 1
+sid = 1
 for class_data in sample_classes:
-    while place < class_data.current_enroll:
+    while place <= class_data.current_enroll:
         sample_enrollments.append(Enrollment(
             placement=place,
             class_id=class_data.id,
@@ -232,28 +203,24 @@ for class_data in sample_classes:
         ))
         sid += 1
         place += 1
-    place = 0
+    place = 1
 
-sample_waitlists = [
-    Waitlist(
-        id=1,
-        class_id=7,
-        student_id=8,
+sample_dropped = [
+    Dropped(
+        class_id=2,
+        student_id=1,
     ),
-    Waitlist(
-        id=2,
-        class_id=7,
-        student_id=9,
+    Dropped(
+        class_id=2,
+        student_id=2,
     ),
-    Waitlist(
-        id=3,
-        class_id=7,
-        student_id=10,
+    Dropped(
+        class_id=2,
+        student_id=3,
     ),
-    Waitlist(
-        id=4,
-        class_id=7,
-        student_id=11,
+    Dropped(
+        class_id=2,
+        student_id=4,
     ),
 ]
 
@@ -342,14 +309,13 @@ def populate_database():
     create_table(conn, enrollment_table)
 
 
-    waitlist_table ='''CREATE TABLE IF NOT EXISTS waitlist (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    dropped_table ="""CREATE TABLE IF NOT EXISTS dropped (
                     class_id INTEGER NOT NULL,
                     student_id INTEGER NOT NULL,
                     FOREIGN KEY(class_id) REFERENCES class(id),
                     FOREIGN KEY(student_id) REFERENCES student(id)
-                )'''
-    create_table(conn, waitlist_table)
+                )"""
+    create_table(conn, dropped_table)
 
     cursor = conn.cursor()
     for department_data in sample_departments:
@@ -418,21 +384,32 @@ def populate_database():
             )
         )
 
-    for waitlist_data in sample_waitlists:
+    for dropped_data in sample_dropped:
         cursor.execute(
             """
-            INSERT INTO waitlist (id, class_id, student_id)
-            VALUES (?, ?, ?)
+            INSERT INTO dropped (class_id, student_id)
+            VALUES (?, ?)
             """,
             (
-            waitlist_data.id,
-            waitlist_data.class_id,
-            waitlist_data.student_id
+            dropped_data.class_id,
+            dropped_data.student_id
             )
         )
     
     #Update more tables for testing purposes
     #Have student id = 1 have max number of waitlists
+    cursor.execute(
+        """
+        UPDATE class SET current_enroll = 31
+        WHERE id = 8
+        """
+    )
+    cursor.execute(
+        """
+        INSERT INTO enrollment (placement, class_id, student_id)
+        VALUES (31, 8, 1)
+        """
+    )
     cursor.execute(
         """
         UPDATE class SET current_enroll = 33
@@ -464,35 +441,8 @@ def populate_database():
         """
     )
 
-
     conn.commit()
     cursor.close()
-    print("--- test to see if population worked ---")
-
-    query = "SELECT * FROM department"
-    print(query)
-    select_query(conn, query)
-
-    query = "SELECT * FROM instructor"
-    print(query)
-    select_query(conn, query)
-
-    query = "SELECT * FROM student"
-    print(query)
-    select_query(conn, query)
-
-    query = "SELECT * FROM class"
-    print(query)
-    select_query(conn, query)
-
-    query = "SELECT * FROM enrollment"
-    print(query)
-    select_query(conn, query)
-
-    query = "SELECT * FROM waitlist"
-    print(query)
-    select_query(conn, query)
-
     conn.close()
 
     print("Database populated :D")

@@ -11,7 +11,7 @@
 
 - then in the working directory run this command to run the uvicorn server
 
-`uvicorn main:app --host 0.0.0.0 --port 8000 --reload`
+`foreman start`
 
 - finally go to the following link to test the api
 
@@ -19,7 +19,15 @@
 
 - to populate the database with some sample data run populate.py
 
-`python3 populate.py`
+`python populate.py`
+
+- if you want to view what was populated in the db run test_queries.py
+
+`python test_queries.py`
+
+# Testing variables
+- student_id 1 is on 3 waitlists
+- class_id 2 (with instructor_id 2) has 4 dropped students
 
 # windows execution policy
 - if you are running this on a windows machine you may have to set the execution policy to run your virutal enviroment
