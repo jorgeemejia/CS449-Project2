@@ -11,7 +11,7 @@
 
 - then in the working directory run this command to run the uvicorn server
 
-`uvicorn main:app --host 0.0.0.0 --port 8000 --reload`
+`foreman start`
 
 - finally go to the following link to test the api
 
