@@ -19,19 +19,16 @@ class Class(BaseModel):
     department_id: int
     instructor_id: int
 
-
 class Student(BaseModel):
     id: int
     name: str
-    enrolled_classes: List[Class] = [] 
-    
+    dropped_classes: List[Class] = [] 
 
 class Enrollment(BaseModel):
     placement: int
     class_id: int
     student_id: int
 
-class Waitlist(BaseModel):
-    id: int
+class Dropped(BaseModel):
     class_id: int
     student_id: int
