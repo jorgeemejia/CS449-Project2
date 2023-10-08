@@ -225,7 +225,7 @@ def drop_student_from_class(student_id: int, class_id: int, db: sqlite3.Connecti
 
 # Get all classes with waiting lists
 @router.get("/waitlist/classes", tags=['Waitlist'])
-def view_waiting_list(db: sqlite3.Connection = Depends(get_db)):
+def view_all_class_waitlists(db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()  
 
     # fetch all relevant waitlist information for student

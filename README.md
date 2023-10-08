@@ -28,6 +28,11 @@
 # Testing variables
 - student_id 1 is on 3 waitlists
 - class_id 2 (with instructor_id 2) has 4 dropped students
+- class_id 4, 6, 8, 13, 14 are all full, but have open waitlists
+- class_id 12 is fully enrolled, with a full waitlist
+- all classes have a default max_enroll value of 30
+- there are 500 student_ids, with upwards of 300 of them currently being used
+- there are 100 instructor_ids, with only ~14 of them being used
 
 # windows execution policy
 - if you are running this on a windows machine you may have to set the execution policy to run your virutal enviroment
