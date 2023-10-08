@@ -289,7 +289,7 @@ def populate_database():
                         id integer NOT NULL PRIMARY KEY UNIQUE,
                         name text NOT NULL,
                         course_code text NOT NULL,
-                        section_number text NOT NULL,
+                        section_number int NOT NULL,
                         current_enroll integer,
                         max_enroll integer,
                         department_id integer,
