@@ -32,3 +32,8 @@ class Enrollment(BaseModel):
 class Dropped(BaseModel):
     class_id: int
     student_id: int
+
+class User(BaseModel):
+    username: str
+    password: str
+    role : str 
