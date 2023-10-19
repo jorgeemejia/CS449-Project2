@@ -55,13 +55,26 @@ def show_db(c):
     print('\n'+query)
     select_query(c, query)
 
+def show_users_db(c):
+    query = """SELECT name FROM sqlite_master WHERE type = 'table'"""
+    select_query(c, query)
+
+    query = "SELECT * FROM users LIMIT 10"
+    print('\n'+query)
+    select_query(c, query)
+
+
 
 def start():
     database = "database.db"
     conn = create_connection(database)
+    users_database = "users.db"
+    users_conn = create_connection(users_database)
 
     show_db(conn)
     conn.close()
+    show_users_db(users_conn)
+    users_conn.close()
 
 if __name__ == "__main__":
     start()
