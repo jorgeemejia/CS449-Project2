@@ -330,14 +330,16 @@ def populate_database():
 
     instructor_table = """ CREATE TABLE IF NOT EXISTS instructor (
                             id integer NOT NULL PRIMARY KEY UNIQUE,
-                            name text NOT NULL
+                            name text NOT NULL,
+                            username text NOT NULL UNIQUE
                         ); """
     create_table(conn, instructor_table)
 
     student_table = """ CREATE TABLE IF NOT EXISTS student (
                             id integer NOT NULL PRIMARY KEY UNIQUE,
                             name text NOT NULL,
-                            waitlist_count integer
+                            waitlist_count integer,
+                            username text NOT NULL UNIQUE
                         ); """
     create_table(conn, student_table)
 
@@ -394,21 +396,23 @@ def populate_database():
         )
 
     for index, instructor_name in enumerate(name[500::], start = 1):
+        username = instructor_name.replace(" ", "").lower()
         cursor.execute(
             """
-            INSERT INTO instructor (id, name)
-            VALUES (?, ?)
+            INSERT INTO instructor (id, name, username)
+            VALUES (?, ?, ?)
             """,
-            (index, instructor_name)
+            (index, instructor_name, username)
         )
 
     for index, student_name in enumerate(name[:500:], start = 1):
+        username = student_name.replace(" ", "").lower()
         cursor.execute(
             """
-            INSERT INTO student (id, name, waitlist_count)
-            VALUES (?, ?, ?)
+            INSERT INTO student (id, name, waitlist_count, username)
+            VALUES (?, ?, ?, ?)
             """,
-            (index, student_name, 0)
+            (index, student_name, 0, username)
         )
 
     for class_data in sample_classes:

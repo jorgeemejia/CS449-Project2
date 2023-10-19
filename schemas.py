@@ -8,6 +8,7 @@ class Department(BaseModel):
 class Instructor(BaseModel):
     id: int
     name: str
+    username: str
 
 class Class(BaseModel):
     id: int
@@ -23,6 +24,7 @@ class Student(BaseModel):
     id: int
     name: str
     dropped_classes: List[Class] = [] 
+    username: str
 
 class Enrollment(BaseModel):
     placement: int
