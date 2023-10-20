@@ -4,7 +4,7 @@
     "endpoints": [
         {
             "_comment": "STUDENT API GET -  CLASSESS",
-            "endpoint": "/students/{student_id}/classes",
+            "endpoint": "/api/students/{student_id}/classes",
             "method": "GET",
             "output_encoding": "no-op",
             "backend": [
@@ -24,7 +24,7 @@
         },
         {
             "_comment": "STUDENT API GET -  ENROLLED",
-            "endpoint": "/students/{student_id}/enrolled",
+            "endpoint": "/api/students/{student_id}/enrolled",
             "method": "GET",
             "output_encoding": "no-op",
             "backend": [
@@ -44,7 +44,7 @@
         },
         {
             "_comment": "STUDENT API POST -  ENROLL",
-            "endpoint": "/students/{student_id}/classes/{class_id}/enroll",
+            "endpoint": "/api/students/{student_id}/classes/{class_id}/enroll",
             "method": "POST",
             "output_encoding": "no-op",
             "backend": [
@@ -64,7 +64,7 @@
         },
         {
             "_comment": "STUDENT API PUT -  DROP",
-            "endpoint": "/students/{student_id}/classes/{class_id}/drop/",
+            "endpoint": "/api/students/{student_id}/classes/{class_id}/drop/",
             "method": "PUT",
             "output_encoding": "no-op",
             "backend": [
@@ -84,7 +84,7 @@
         },
         {
             "_comment": "WAIT LIST API GET - CLASSESS",
-            "endpoint": "/waitlist/classes",
+            "endpoint": "/api/waitlist/classes",
             "method": "GET",
             "output_encoding": "no-op",
             "backend": [
@@ -104,7 +104,7 @@
         },
         {
             "_comment": "WAIT LIST API GET - WAITINGLIST",
-            "endpoint": "/waitlist/students/{student_id}",
+            "endpoint": "/api/waitlist/students/{student_id}",
             "method": "GET",
             "output_encoding": "no-op",
             "backend": [
@@ -124,7 +124,7 @@
         },
         {
             "_comment": "WAIT LIST API PUT - DROP",
-            "endpoint": "/waitlist/students/{student_id}/classes/{class_id}/drop",
+            "endpoint": "/api/waitlist/students/{student_id}/classes/{class_id}/drop",
             "method": "PUT",
             "output_encoding": "no-op",
             "backend": [
@@ -144,7 +144,7 @@
         },
         {
             "_comment": "WAIT LIST API GET - CURRENT",
-            "endpoint": "/waitlist/instructors/{instructor_id}/classes/{class_id}",
+            "endpoint": "/api/waitlist/instructors/{instructor_id}/classes/{class_id}",
             "method": "GET",
             "output_encoding": "no-op",
             "backend": [
@@ -164,7 +164,7 @@
         },
         {
             "_comment": "INSTRUCTOR API GET - ENROLLMENT",
-            "endpoint": "/instructors/{instructor_id}/classes/{class_id}/enrollment",
+            "endpoint": "/api/instructors/{instructor_id}/classes/{class_id}/enrollment",
             "method": "GET",
             "output_encoding": "no-op",
             "backend": [
@@ -184,7 +184,7 @@
         },
         {
             "_comment": "INSTRUCTOR API GET - DROPPED",
-            "endpoint": "/instructors/{instructor_id}/classes/{class_id}/drop",
+            "endpoint": "/api/instructors/{instructor_id}/classes/{class_id}/drop",
             "method": "GET",
             "output_encoding": "no-op",
             "backend": [
@@ -204,7 +204,7 @@
         },
         {
             "_comment": "INSTRUCTOR API POST - DROPSTUDENTS",
-            "endpoint": "/instructors/{instructor_id}/classes/{class_id}/students/{student_id}/drop",
+            "endpoint": "/api/instructors/{instructor_id}/classes/{class_id}/students/{student_id}/drop",
             "method": "POST",
             "output_encoding": "no-op",
             "backend": [
@@ -224,7 +224,7 @@
         },
         {
             "_comment": "REGISTRAR API POST - CLASSESS",
-            "endpoint": "/registrar/classes/",
+            "endpoint": "/api/registrar/classes/",
             "method": "POST",
             "output_encoding": "no-op",
             "backend": [
@@ -244,7 +244,7 @@
         },
         {
             "_comment": "REGISTRAR API DELETE - REMOVE CLASSESS",
-            "endpoint": "/registrar/classes/{class_id}",
+            "endpoint": "/api/registrar/classes/{class_id}",
             "method": "DELETE",
             "output_encoding": "no-op",
             "backend": [
@@ -264,7 +264,7 @@
         }, 
         {
             "_comment": "REGISTRAR API PUT - ASSIGN INSTRUCTOR",
-            "endpoint": "/registrar/classes/{class_id}/instructors/{instructor_id}",
+            "endpoint": "/api/registrar/classes/{class_id}/instructors/{instructor_id}",
             "method": "PUT",
             "output_encoding": "no-op",
             "backend": [
@@ -284,7 +284,7 @@
         },
         {
             "_comment": "REGISTRAR API PUT - FREEZE",
-            "endpoint": "/registrar/automatic-enrollment/freeze",
+            "endpoint": "/api/registrar/automatic-enrollment/freeze",
             "method": "PUT",
             "output_encoding": "no-op",
             "backend": [
