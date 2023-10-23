@@ -57,6 +57,21 @@ def login(login: Login, db: sqlite3.Connection = Depends(get_users_db)):
     cur = db.execute("SELECT * FROM USERS WHERE username = ?", [login.username])
     user = cur.fetchone()
 
+        # json response when login is successful
+    json_response = {
+    "access_token": {
+        "jti": "mnb23vcsrt756yuiomnbvcx98ertyuiop",
+        "roles": ["admin"],
+        "exp": 1735689600
+        },
+    "refresh_token": {
+        "sub": "1234567890qwertyuio",
+        "jti": "mnb23vcsrt756yuiomn12876bvcx98ertyuiop",
+        "exp": 1735689600
+        },
+    "exp": 1735689600
+    }
+
     if user:
         stored_password = user["password"]
         password_match = verify_password(login.password, stored_password)
@@ -65,28 +80,15 @@ def login(login: Login, db: sqlite3.Connection = Depends(get_users_db)):
             raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Incorrect password.")
         
-        return {"message": "Signing in was sucessful."}
+        return json_response
     
     else:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User account not found."
         )
 
-    # json response when login is successful
-    json_response = {
-    "access_token": {
-        "jti": "mnb23vcsrt756yuiomnbvcx98ertyuiop",
-        "roles": ["admin"],
-        "exp": 1735689600
-    },
-    "refresh_token": {
-        "sub": "1234567890qwertyuio",
-        "jti": "mnb23vcsrt756yuiomn12876bvcx98ertyuiop",
-        "exp": 1735689600
-    },
-    "exp": 1735689600
-}
-    return json_response
+
+
 
 @users_router.get("/protected")
 def protected():
