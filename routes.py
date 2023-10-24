@@ -2,7 +2,12 @@ import contextlib
 import sqlite3
 
 from fastapi import Depends, HTTPException, APIRouter, status
-from schemas import Class
+from schemas import Class, User, TokenPayload
+
+from typing import Union, Any
+from fastapi.security import OAuth2PasswordBearer
+from jwcrypto import jwt, jwk
+import datetime
 
 router = APIRouter()
 dropped = []
@@ -31,12 +36,62 @@ def reorder_placement(cur, total_enrolled, placement, class_id):
                 WHERE id = ?""",(class_id,))
 
 
+
+# =======================to handle jwt verification========================
+
+reuseable_oauth = OAuth2PasswordBearer(
+    tokenUrl="/login",
+    scheme_name="JWT"
+)
+ALGORITHM = "RS256"
+
+# clear up secret keys
+JWT_SECRET_KEY = jwk.JWK.generate(kty="RSA").export()
+
+
+async def get_current_user(token: str = Depends(reuseable_oauth),  db: sqlite3.Connection = Depends(get_db)) -> User:
+    try:
+        # decoding the token using jwt_secret_key and algorithm
+        token = jwt.JWT(key=JWT_SECRET_KEY, jwt=token, algs=[ALGORITHM])
+        payload = token.claims
+        token_data = TokenPayload(**payload)
+
+        # checking the token expiry
+        if datetime.fromtimestamp(token_data.exp) < datetime.now():
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token expired",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+    except:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    user = db.get(token_data.sub)
+    cursor = db.cursor()
+    
+    # Check if the student exists in the database
+    cursor.execute("SELECT * FROM users WHERE id = ?", (token_data.sub,))
+    user = cursor.fetchone()
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Could not find user",
+        )
+    
+    return User(**user)
+
+
+
 #==========================================students==================================================
 
 
 #gets available classes for a student
 @router.get("/students/{student_id}/classes", tags=['Student']) 
-def get_available_classes(student_id: int, db: sqlite3.Connection = Depends(get_db)):
+def get_available_classes(student_id: int, db: sqlite3.Connection = Depends(get_db), user: User = Depends(get_current_user)):
     cursor = db.cursor()
     # Fetch student data from db
     cursor.execute(

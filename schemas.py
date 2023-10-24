@@ -39,3 +39,20 @@ class User(BaseModel):
     username: str
     password: str
     role : str 
+
+
+class AccessToken(BaseModel):
+    jti: str
+    roles: list
+    exp: int
+
+class RefreshToken(BaseModel):
+    sub: str
+    jti: str
+    exp: int
+
+
+class TokenPayload(BaseModel):
+    access_token: AccessToken
+    refresh_token: RefreshToken
+    exp: int
