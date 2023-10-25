@@ -57,7 +57,7 @@
                     "host": [
                         "http://localhost:5000",
                         "http://localhost:5100",
-                        "http://localhost:5200"                        
+                        "http://localhost:5200"
                     ],
                     "encoding": "no-op",
                     "extra_config": {
@@ -79,7 +79,8 @@
                     "host": [
                         "http://localhost:5000",
                         "http://localhost:5100",
-                        "http://localhost:5200"                    ],
+                        "http://localhost:5200"
+                    ],
                     "encoding": "no-op",
                     "extra_config": {
                         "backend/http": {
@@ -100,7 +101,8 @@
                     "host": [
                         "http://localhost:5000",
                         "http://localhost:5100",
-                        "http://localhost:5200"                    ],
+                        "http://localhost:5200"
+                    ],
                     "encoding": "no-op",
                     "extra_config": {
                         "backend/http": {
@@ -121,7 +123,8 @@
                     "host": [
                         "http://localhost:5000",
                         "http://localhost:5100",
-                        "http://localhost:5200"                    ],
+                        "http://localhost:5200"
+                    ],
                     "encoding": "no-op",
                     "extra_config": {
                         "backend/http": {
@@ -142,7 +145,8 @@
                     "host": [
                         "http://localhost:5000",
                         "http://localhost:5100",
-                        "http://localhost:5200"                    ],
+                        "http://localhost:5200"
+                    ],
                     "encoding": "no-op",
                     "extra_config": {
                         "backend/http": {
@@ -163,7 +167,8 @@
                     "host": [
                         "http://localhost:5000",
                         "http://localhost:5100",
-                        "http://localhost:5200"                    ],
+                        "http://localhost:5200"
+                    ],
                     "encoding": "no-op",
                     "extra_config": {
                         "backend/http": {
@@ -184,7 +189,8 @@
                     "host": [
                         "http://localhost:5000",
                         "http://localhost:5100",
-                        "http://localhost:5200"                    ],
+                        "http://localhost:5200"
+                    ],
                     "encoding": "no-op",
                     "extra_config": {
                         "backend/http": {
@@ -205,7 +211,8 @@
                     "host": [
                         "http://localhost:5000",
                         "http://localhost:5100",
-                        "http://localhost:5200"                    ],
+                        "http://localhost:5200"
+                    ],
                     "encoding": "no-op",
                     "extra_config": {
                         "backend/http": {
@@ -226,7 +233,8 @@
                     "host": [
                         "http://localhost:5000",
                         "http://localhost:5100",
-                        "http://localhost:5200"                    ],
+                        "http://localhost:5200"
+                    ],
                     "encoding": "no-op",
                     "extra_config": {
                         "backend/http": {
@@ -247,7 +255,8 @@
                     "host": [
                         "http://localhost:5000",
                         "http://localhost:5100",
-                        "http://localhost:5200"                    ],
+                        "http://localhost:5200"
+                    ],
                     "encoding": "no-op",
                     "extra_config": {
                         "backend/http": {
@@ -268,7 +277,8 @@
                     "host": [
                         "http://localhost:5000",
                         "http://localhost:5100",
-                        "http://localhost:5200"                    ],
+                        "http://localhost:5200"
+                    ],
                     "encoding": "no-op",
                     "extra_config": {
                         "backend/http": {
@@ -277,7 +287,7 @@
                     }
                 }
             ]
-        }, 
+        },
         {
             "_comment": "REGISTRAR API PUT - ASSIGN INSTRUCTOR",
             "endpoint": "/api/registrar/classes/{class_id}/instructors/{instructor_id}",
@@ -289,7 +299,8 @@
                     "host": [
                         "http://localhost:5000",
                         "http://localhost:5100",
-                        "http://localhost:5200"                    ],
+                        "http://localhost:5200"
+                    ],
                     "encoding": "no-op",
                     "extra_config": {
                         "backend/http": {
@@ -310,7 +321,8 @@
                     "host": [
                         "http://localhost:5000",
                         "http://localhost:5100",
-                        "http://localhost:5200"                    ],
+                        "http://localhost:5200"
+                    ],
                     "encoding": "no-op",
                     "extra_config": {
                         "backend/http": {
@@ -321,29 +333,29 @@
             ]
         },
         {
-            "_comment" : "LOGIN",
+            "_comment": "LOGIN",
             "endpoint": "/api/login",
-            "method" : "POST",
+            "method": "POST",
             "output_encoding": "json",
             "extra_config": {
                 "auth/signer": {
-                    "alg" : "HS256",
-                    "jwk_local_path" : "symmetric.json",
+                    "alg": "HS256",
+                    "jwk_local_path": "symmetric.json",
                     "keys_to_sign": [
                         "access_token",
                         "refresh_token"
                     ],
-                "kid" : "sim2",
-                "disable_jwk_security": true
+                    "kid": "sim2",
+                    "disable_jwk_security": true
                 }
             },
             "backend": [
                 {
                     "url_pattern": "/login",
-                    "host" : [
+                    "host": [
                         "http://localhost:5000",
                         "http://localhost:5100",
-                        "http://localhost:5200"  
+                        "http://localhost:5200"
                     ],
                     "encoding": "json",
                     "method": "POST",
@@ -362,7 +374,9 @@
                 "auth/validator": {
                     "alg": "HS256",
                     "roles_key": "roles",
-                    "roles": ["admin"],
+                    "roles": [
+                        "admin"
+                    ],
                     "jwk_local_path": "symmetric.json",
                     "cache": false,
                     "disable_jwk_security": true
@@ -371,10 +385,10 @@
             "backend": [
                 {
                     "url_pattern": "/protected",
-                    "host" : [
+                    "host": [
                         "http://localhost:5000",
                         "http://localhost:5100",
-                        "http://localhost:5200"  
+                        "http://localhost:5200"
                     ],
                     "encoding": "json",
                     "method": "GET",
@@ -386,6 +400,5 @@
                 }
             ]
         }
-
     ]
 }
