@@ -15,3 +15,6 @@ lease:
   type: "static"
 
   candidate: true
+
+exec:
+# "uvicorn --port $PORT api:app --reload"
