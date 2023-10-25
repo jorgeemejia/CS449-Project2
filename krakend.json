@@ -321,26 +321,6 @@
             ]
         },
         {
-            "_comment": "REGISTRAR API PUT - FREEZE",
-            "endpoint": "/api/registrar/automatic-enrollment/freeze",
-            "method": "PUT",
-            "output_encoding": "no-op",
-            "backend": [
-                {
-                    "url_pattern": "/registrar/automatic-enrollment/freeze",
-                    "host": [
-                        "http://localhost:5000"
-                    ],
-                    "encoding": "no-op",
-                    "extra_config": {
-                        "backend/http": {
-                            "return_error_details": "backend_RegistrarFreeze"
-                        }
-                    }
-                }
-            ]
-        },
-        {
             "_comment" : "LOGIN",
             "endpoint": "/api/login",
             "method" : "POST",
@@ -361,7 +341,9 @@
                 {
                     "url_pattern": "/login",
                     "host" : [
-                        "http://localhost:5000"
+                        "http://localhost:5000",
+                        "http://localhost:5100",
+                        "http://localhost:5200"  
                     ],
                     "encoding": "json",
                     "method": "POST",
@@ -390,7 +372,9 @@
                 {
                     "url_pattern": "/protected",
                     "host" : [
-                        "http://localhost:5000"
+                        "http://localhost:5000",
+                        "http://localhost:5100",
+                        "http://localhost:5200"  
                     ],
                     "encoding": "json",
                     "method": "GET",
