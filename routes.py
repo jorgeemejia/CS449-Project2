@@ -1,21 +1,54 @@
 import contextlib
 import sqlite3
 
+import base64
+import hashlib
+import secrets
+
 from fastapi import Depends, HTTPException, APIRouter, status
 from schemas import Class
+
+from pydantic import BaseModel
+
 
 router = APIRouter()
 dropped = []
 
+class Register(BaseModel):
+    first_name: str
+    last_name: str
+    username: str
+    role: str
+
+
 FREEZE = False
 MAX_WAITLIST = 3
 database = "database.db"
+users_db = "users.db"
+ALGORITHM = "pbkdf2_sha256"
 
 # Connect to the database
 def get_db():
     with contextlib.closing(sqlite3.connect(database, check_same_thread=False)) as db:
         db.row_factory = sqlite3.Row
         yield db
+
+# Connect to the users database
+def get_users_db():
+    with contextlib.closing(sqlite3.connect(users_db, check_same_thread=False)) as udb:
+        udb.row_factory = sqlite3.Row
+        yield udb
+
+def hash_password(password, salt=None, iterations=260000):
+    if salt is None:
+        salt = secrets.token_hex(16)
+    assert salt and isinstance(salt, str) and "$" not in salt
+    assert isinstance(password, str)
+    pw_hash = hashlib.pbkdf2_hmac(
+        "sha256", password.encode("utf-8"), salt.encode("utf-8"), iterations
+    )
+    b64_hash = base64.b64encode(pw_hash).decode("ascii").strip()
+    return "{}${}${}${}".format(ALGORITHM, iterations, salt, b64_hash)
 
 
 # Called when a student is dropped from a class / waiting list
@@ -562,3 +595,45 @@ def freeze_automatic_enrollment():
     else:
         FREEZE = True
         return {"message": "Automatic enrollment frozen successfully"}
+
+@router.post("/registrar/create/account")
+def register(register: Register, db: sqlite3.Connection = Depends(get_db), udb: sqlite3.Connection = Depends(get_users_db)):
+    # First lets check if the 
+    cur = udb.execute("SELECT * FROM USERS WHERE username = ?", (register.username,))
+    cur2 = db.execute("""SELECT username FROM STUDENT WHERE username = ? UNION SELECT username FROM INSTRUCTOR WHERE username = ?;""", (register.username, register.username))
+    username_exist_stu = cur.fetchone()
+    username_exist_ins = cur2.fetchone()
+
+    if username_exist_stu or username_exist_ins:
+        return {"message": "Username already exists. Please enter a different username."}
+    
+    # Username doesnt exist in db, so let's add them in there.
+    first_name = register.first_name
+    last_name = register.last_name
+    username = register.username
+    role = register.role.capitalize()
+    
+    # Dummy password.
+    password = hash_password("password")
+
+    if role == "Student":
+        # This is to create their student id since we are basing this off total students.
+        total_users_cur = db.execute("SELECT COUNT(*) FROM STUDENT;")
+        total_users = total_users_cur.fetchone()[0] 
+
+        cur = udb.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)", (username, password, role))
+        udb.commit()
+        cur2 = db.execute("INSERT INTO student (id, name, waitlist_count, username) VALUES (?, ?, 0, ?)", (int(total_users) + 1, first_name + ' ' + last_name, username))
+        db.commit()
+
+        return {"message": "Student account created."}
+    else:
+        # This is to create their instructor id since we are basing this off total instructors.
+        total_users_cur = db.execute("SELECT COUNT(*) FROM INSTRUCTOR;")
+        total_users = total_users_cur.fetchone()[0] 
+
+        cur = udb.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)", (username, password, role))
+        udb.commit()
+        cur2 = db.execute("INSERT INTO instructor (id, name, username) VALUES (?, ?, ?)", (int(total_users) + 1, first_name + ' ' + last_name, username))
+        db.commit()
+        return {"message": "Instructor account created."}

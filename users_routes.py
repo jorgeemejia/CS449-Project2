@@ -13,6 +13,7 @@ from pydantic import BaseModel
 users_router = APIRouter()
 
 database = "users.db"
+enrollmentdb = "database.db"
 
 ALGORITHM = "pbkdf2_sha256"
 
@@ -21,12 +22,17 @@ class Login(BaseModel):
     password: str
 
 
-
 # Connect to the database
 def get_users_db():
     with contextlib.closing(sqlite3.connect(database, check_same_thread=False)) as db:
         db.row_factory = sqlite3.Row
         yield db
+
+# Connect to the database
+def get_enrollment_db():
+    with contextlib.closing(sqlite3.connect(enrollmentdb, check_same_thread=False)) as edb:
+        edb.row_factory = sqlite3.Row
+        yield edb
 
 def hash_password(password, salt=None, iterations=260000):
     if salt is None:
@@ -86,8 +92,6 @@ def login(login: Login, db: sqlite3.Connection = Depends(get_users_db)):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User account not found."
         )
-
-
 
 
 @users_router.get("/protected")
