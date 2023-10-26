@@ -9,6 +9,8 @@ from schemas import Class
 
 import json
 from pydantic import BaseModel
+from pydantic_settings import BaseSettings
+
 
 users_router = APIRouter()
 
@@ -16,15 +18,17 @@ database = "users.db"
 
 ALGORITHM = "pbkdf2_sha256"
 
+class Settings(BaseSettings, env_file=".env", extra="ignore"):
+    database: str
+
 class Login(BaseModel):
     username: str
     password: str
 
 
-
 # Connect to the database
 def get_users_db():
-    with contextlib.closing(sqlite3.connect(database, check_same_thread=False)) as db:
+    with contextlib.closing(sqlite3.connect(Settings.database, check_same_thread=False)) as db:
         db.row_factory = sqlite3.Row
         yield db
 
