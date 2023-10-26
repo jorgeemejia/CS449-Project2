@@ -20,7 +20,6 @@ ALGORITHM = "pbkdf2_sha256"
 
 class Settings(BaseSettings, env_file=".env", extra="ignore"):
     database: str
-    logging_config: str
 
 class Login(BaseModel):
     username: str
