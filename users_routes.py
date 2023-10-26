@@ -18,7 +18,7 @@ database = "users.db"
 
 ALGORITHM = "pbkdf2_sha256"
 
-class settings(BaseSettings, env_file=".env", extra="ignore"):
+class Settings(BaseSettings, env_file=".env", extra="ignore"):
     database: str
     logging_config: str
 
@@ -29,7 +29,7 @@ class Login(BaseModel):
 
 # Connect to the database
 def get_users_db():
-    with contextlib.closing(sqlite3.connect(database, check_same_thread=False)) as db:
+    with contextlib.closing(sqlite3.connect(Settings.database, check_same_thread=False)) as db:
         db.row_factory = sqlite3.Row
         yield db
 
