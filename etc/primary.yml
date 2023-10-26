@@ -16,5 +16,4 @@ lease:
 
   candidate: true
 
-exec:
-# "uvicorn --port $PORT api:app --reload"
+exec: "uvicorn --port $PORT main:app --reload"

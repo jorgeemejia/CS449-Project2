@@ -1,10 +1,10 @@
 fuse:
-  dir: ./var/secondary/fuse
+  dir: ./var/secondary_2/fuse
 
   allow-other: false
 
 data:
-  dir: ./var/secondary/data
+  dir: ./var/secondary_2/data
 
   compress: true
 
