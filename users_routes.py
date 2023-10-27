@@ -23,8 +23,8 @@ enrollmentdb = "database.db"
 
 ALGORITHM = "pbkdf2_sha256"
 
-class Settings(BaseSettings, env_file=".env", extra="ignore"):
-    database: str
+# class Settings(BaseSettings, env_file=".env", extra="ignore"):
+#     database: str
 
 class Login(BaseModel):
     username: str
@@ -85,7 +85,7 @@ secondary_users_dbs = [get_secondary_users_db_1, get_secondary_users_db_2]
 cycle_iterator = itertools.cycle(secondary_users_dbs)
 
 @users_router.post("/login")
-def login(login: Login, db: sqlite3.Connection = Depends(lambda: next(cycle_iterator))):
+def login(login: Login, db: sqlite3.Connection = Depends(get_secondary_users_db_1)):
 
     cur = db.execute("SELECT * FROM USERS WHERE username = ?", [login.username])
     user = cur.fetchone()
@@ -124,6 +124,10 @@ def login(login: Login, db: sqlite3.Connection = Depends(lambda: next(cycle_iter
 @users_router.get("/protected")
 def protected():
     return {"message": "JWT Verified, access granted"}
+
+@users_router.get("/test")
+def test():
+    return {"message": "Test"}
 
 
 
