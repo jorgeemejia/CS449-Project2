@@ -35,17 +35,12 @@ def get_db():
         db.row_factory = sqlite3.Row
         yield db
 
-# Connect to the users database
-def get_users_db():
-    with contextlib.closing(sqlite3.connect(users_db, check_same_thread=False)) as udb:
-        udb.row_factory = sqlite3.Row
-        yield udb
-
+# Connect to the primary users database
 def get_primary_users_db():
     with contextlib.closing(sqlite3.connect(primary_users_db, check_same_thread=False)) as db:
         db.row_factory = sqlite3.Row
         yield db
-
+# Function used to hash a password
 def hash_password(password, salt=None, iterations=260000):
     if salt is None:
         salt = secrets.token_hex(16)
@@ -56,7 +51,6 @@ def hash_password(password, salt=None, iterations=260000):
     )
     b64_hash = base64.b64encode(pw_hash).decode("ascii").strip()
     return "{}${}${}${}".format(ALGORITHM, iterations, salt, b64_hash)
-
 
 # Called when a student is dropped from a class / waiting list
 # and the enrollment place must be reordered
