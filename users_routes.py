@@ -3,6 +3,7 @@ import sqlite3
 import base64
 import hashlib
 import secrets
+import itertools
 
 from fastapi import Depends, HTTPException, APIRouter, status
 from schemas import Class
@@ -15,6 +16,9 @@ from pydantic_settings import BaseSettings
 users_router = APIRouter()
 
 database = "users.db"
+primary_users_db = "var/primary/fuse/users.db"
+secondary_users_db_1 = "var/secondary/fuse/users.db"
+secondary_users_db_2 = "var/secondary_2/fuse/users.db"
 enrollmentdb = "database.db"
 
 ALGORITHM = "pbkdf2_sha256"
@@ -30,6 +34,21 @@ class Login(BaseModel):
 # Connect to the database
 def get_users_db():
     with contextlib.closing(sqlite3.connect(Settings.database, check_same_thread=False)) as db:
+        db.row_factory = sqlite3.Row
+        yield db
+
+def get_primary_users_db():
+    with contextlib.closing(sqlite3.connect(primary_users_db, check_same_thread=False)) as db:
+        db.row_factory = sqlite3.Row
+        yield db
+
+def get_secondary_users_db_1():
+    with contextlib.closing(sqlite3.connect(secondary_users_db_1, check_same_thread=False)) as db:
+        db.row_factory = sqlite3.Row
+        yield db
+
+def get_secondary_users_db_2():
+    with contextlib.closing(sqlite3.connect(secondary_users_db_2, check_same_thread=False)) as db:
         db.row_factory = sqlite3.Row
         yield db
 
@@ -62,8 +81,11 @@ def verify_password(password, password_hash):
     # This returns a boolean
     return secrets.compare_digest(password_hash, compare_hash)
 
+secondary_users_dbs = [get_secondary_users_db_1, get_secondary_users_db_2]
+cycle_iterator = itertools.cycle(secondary_users_dbs)
+
 @users_router.post("/login")
-def login(login: Login, db: sqlite3.Connection = Depends(get_users_db)):
+def login(login: Login, db: sqlite3.Connection = Depends(lambda: next(cycle_iterator))):
 
     cur = db.execute("SELECT * FROM USERS WHERE username = ?", [login.username])
     user = cur.fetchone()

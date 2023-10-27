@@ -68,7 +68,7 @@ def show_users_db(c):
 def start():
     database = "database.db"
     conn = create_connection(database)
-    users_database = "users.db"
+    users_database = "var/primary/fuse/users.db"
     users_conn = create_connection(users_database)
 
     show_db(conn)

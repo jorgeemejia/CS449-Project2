@@ -27,6 +27,8 @@ database = "database.db"
 users_db = "users.db"
 ALGORITHM = "pbkdf2_sha256"
 
+primary_users_db = "var/primary/fuse/users.db"
+
 # Connect to the database
 def get_db():
     with contextlib.closing(sqlite3.connect(database, check_same_thread=False)) as db:
@@ -38,6 +40,11 @@ def get_users_db():
     with contextlib.closing(sqlite3.connect(users_db, check_same_thread=False)) as udb:
         udb.row_factory = sqlite3.Row
         yield udb
+
+def get_primary_users_db():
+    with contextlib.closing(sqlite3.connect(primary_users_db, check_same_thread=False)) as db:
+        db.row_factory = sqlite3.Row
+        yield db
 
 def hash_password(password, salt=None, iterations=260000):
     if salt is None:
@@ -597,7 +604,7 @@ def freeze_automatic_enrollment():
         return {"message": "Automatic enrollment frozen successfully"}
 
 @router.post("/registrar/create/account")
-def register(register: Register, db: sqlite3.Connection = Depends(get_db), udb: sqlite3.Connection = Depends(get_users_db)):
+def register(register: Register, db: sqlite3.Connection = Depends(get_db), udb: sqlite3.Connection = Depends(get_primary_users_db)):
     # First lets check if the 
     cur = udb.execute("SELECT * FROM USERS WHERE username = ?", (register.username,))
     cur2 = db.execute("""SELECT username FROM STUDENT WHERE username = ? UNION SELECT username FROM INSTRUCTOR WHERE username = ?;""", (register.username, register.username))
