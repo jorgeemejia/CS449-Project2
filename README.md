@@ -24,9 +24,9 @@
 #### To obtain an access token for the student role
 ``` http://localhost:8080/api/login POST username="jamessmith" password="password" ```
 #### To obtain an access token for the instructor role
-``` http://localhost:8080/api/login POST username="INSTRUCTOR_USERNAME" password="password" ```
+``` http://localhost:8080/api/login POST username="nelsonhanson" password="password" ```
 #### To obtain an access token for the registrar role
-``` http://localhost:8080/api/login POST username="REGISTRAR_USERNAME" password="password" ```
+``` http://localhost:8080/api/login POST username="registrar" password="password" ```
 
 ## (5) To use the access token, include it within the Authorization header
 #### For example,  
