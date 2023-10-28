@@ -479,6 +479,17 @@ def populate_database():
             user_data.role
             )
         )
+    users_cursor.execute(
+        """
+        INSERT INTO users (username, password, role)
+        VALUES (?, ?, ?)
+        """,
+        (
+        "registrar",
+        "pbkdf2_sha256$260000$c5fdef958a7ca047c14d57d57a550f4d$njuWsueWXSoQDBUzY4OBHK8j7FSpb/gW9+NAsiIMNhg=",
+        "Registrar"
+        )
+    )
     
     #Update more tables for testing purposes
     #Have student id = 1 have max number of waitlists
