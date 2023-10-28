@@ -83,19 +83,6 @@ def login(login: Login, db: sqlite3.Connection = Depends(next(cycle_iterator))):
     user = cur.fetchone()
 
         # json response when login is successful
-    json_response = {
-    "access_token": {
-        "jti": "mnb23vcsrt756yuiomnbvcx98ertyuiop",
-        "roles": ["admin"],
-        "exp": 1735689600
-        },
-    "refresh_token": {
-        "sub": "1234567890qwertyuio",
-        "jti": "mnb23vcsrt756yuiomn12876bvcx98ertyuiop",
-        "exp": 1735689600
-        },
-    "exp": 1735689600
-    }
 
     if user:
         stored_password = user["password"]
@@ -104,6 +91,24 @@ def login(login: Login, db: sqlite3.Connection = Depends(next(cycle_iterator))):
         if not password_match:
             raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Incorrect password.")
+        
+        role = user["role"].lower() #chat gpt does this work, i'm trying to access the user's role field
+        print(role)
+        print(type(role))
+
+        json_response = {
+            "access_token": {
+                "jti": "mnb23vcsrt756yuiomnbvcx98ertyuiop",
+                "roles": [role],
+                "exp": 1735689600
+                },
+            "refresh_token": {
+                "sub": "1234567890qwertyuio",
+                "jti": "mnb23vcsrt756yuiomn12876bvcx98ertyuiop",
+                "exp": 1735689600
+                },
+            "exp": 1735689600
+        }
         
         return json_response
     
