@@ -9,7 +9,7 @@
             "output_encoding": "no-op",
             "extra_config": {
                 "auth/validator": {
-                    "alg": "HS256",
+                    "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
                         "student"
@@ -43,7 +43,7 @@
             "output_encoding": "no-op",
             "extra_config": {
                 "auth/validator": {
-                    "alg": "HS256",
+                    "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
                         "student"
@@ -77,7 +77,7 @@
             "output_encoding": "no-op",
             "extra_config": {
                 "auth/validator": {
-                    "alg": "HS256",
+                    "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
                         "student"
@@ -111,7 +111,7 @@
             "output_encoding": "no-op",
             "extra_config": {
                 "auth/validator": {
-                    "alg": "HS256",
+                    "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
                         "student"
@@ -145,7 +145,7 @@
             "output_encoding": "no-op",
             "extra_config": {
                 "auth/validator": {
-                    "alg": "HS256",
+                    "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
                         "student"
@@ -179,7 +179,7 @@
             "output_encoding": "no-op",
             "extra_config": {
                 "auth/validator": {
-                    "alg": "HS256",
+                    "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
                         "student"
@@ -213,7 +213,7 @@
             "output_encoding": "no-op",
             "extra_config": {
                 "auth/validator": {
-                    "alg": "HS256",
+                    "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
                         "student"
@@ -247,7 +247,7 @@
             "output_encoding": "no-op",
             "extra_config": {
                 "auth/validator": {
-                    "alg": "HS256",
+                    "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
                         "instructor"
@@ -281,7 +281,7 @@
             "output_encoding": "no-op",
             "extra_config": {
                 "auth/validator": {
-                    "alg": "HS256",
+                    "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
                         "instructor"
@@ -315,7 +315,7 @@
             "output_encoding": "no-op",
             "extra_config": {
                 "auth/validator": {
-                    "alg": "HS256",
+                    "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
                         "instructor"
@@ -349,7 +349,7 @@
             "output_encoding": "no-op",
             "extra_config": {
                 "auth/validator": {
-                    "alg": "HS256",
+                    "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
                         "instructor"
@@ -383,7 +383,7 @@
             "output_encoding": "no-op",
             "extra_config": {
                 "auth/validator": {
-                    "alg": "HS256",
+                    "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
                         "registrar"
@@ -417,7 +417,7 @@
             "output_encoding": "no-op",
             "extra_config": {
                 "auth/validator": {
-                    "alg": "HS256",
+                    "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
                         "registrar"
@@ -451,7 +451,7 @@
             "output_encoding": "no-op",
             "extra_config": {
                 "auth/validator": {
-                    "alg": "HS256",
+                    "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
                         "registrar"
@@ -485,7 +485,7 @@
             "output_encoding": "no-op",
             "extra_config": {
                 "auth/validator": {
-                    "alg": "HS256",
+                    "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
                         "registrar"
@@ -519,7 +519,7 @@
             "output_encoding": "json",
             "extra_config": {
                 "auth/signer": {
-                    "alg": "HS256",
+                    "alg": "RS256",
                     "jwk_local_path": "symmetric.json",
                     "keys_to_sign": [
                         "access_token",
@@ -552,7 +552,7 @@
             "method": "GET",
             "extra_config": {
                 "auth/validator": {
-                    "alg": "HS256",
+                    "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
                         "admin"
