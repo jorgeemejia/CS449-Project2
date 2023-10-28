@@ -1,6 +1,6 @@
 # course-manager api
 
-## create a venv ativate it then install the requirements
+## (1) create a venv ativate it then install the requirements
 
 `python -m venv myenv`
 
@@ -9,15 +9,15 @@
 `pip install -r requirements.txt`
 
 
-## then in the working directory run this command to run the uvicorn server
+## (2) in the working directory run this command to run the uvicorn server
 
 `foreman start`
 
-## populate the database with some sample data by running populate.py
+## (3) populate the database with some sample data by running populate.py
 
 `python populate.py`
 
-## ***Note that all enrollment services now enforce role based authentication
+## (4) Note that all enrollment services now enforce role based authentication
 
 ### In order to obtain an access token you must first login: 
 #### To obtain an access token for the student role
