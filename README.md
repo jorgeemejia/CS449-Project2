@@ -29,7 +29,7 @@
 ``` http://localhost:8080/api/login POST username="registrar" password="password" ```
 
 ## (5) To use the access token, include it within the Authorization header
-#### For example,  
+#### For example, a student can use their access token to do the following:  
 ```http GET http://localhost:8080/api/students/1/classes Authorization:"Bearer eyJhbGciOiJIUzI1NiIsImtpZCI6InNpbTIifQ.eyJleHAiOjE3MzU2ODk2MDAsImp0aSI6Im1uYjIzdmNzcnQ3NTZ5dWlvbW5idmN4OThlcnR5dWlvcCIsInJvbGVzIjpbImFkbWluIl19.s5qlgDpy0JkGOQMYq9H1c9pOGYiaqe95KqjJILLSeR4"```
 
 ## To see all available endpoints, visit 
