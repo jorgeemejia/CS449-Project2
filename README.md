@@ -13,6 +13,10 @@
 
 `foreman start`
 
+## populate the database with some sample data by running populate.py
+
+`python populate.py`
+
 ## ***Note that all enrollment services now enforce role based authentication
 
 ### In order to obtain an access token you must first login: 
@@ -29,10 +33,6 @@
 
 ## To see all available endpoints, visit 
 `http://localhost:5300/docs` 
-
-## to populate the database with some sample data run populate.py
-
-`python populate.py`
 
 ## if you want to view what was populated in the db run test_queries.py
 
