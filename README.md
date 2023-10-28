@@ -13,22 +13,22 @@
 
 `foreman start`
 
-## finally go to the following link to test the api
+## ***Note that all enrollment services now enforce role based authentication
 
-`http://localhost:5300/docs` 
-
-## if you wish to use the proxy, prepend /api to the endpoint and use port 8080
-
-for example, http://localhost:5300/students/1/classes => http://localhost:8080/api/students/1/classes
-
-### note that all enrollment services now support role based authentication.
-### In order to obtain an access token you must first login
+### In order to obtain an access token you must first login: 
 #### To obtain an access token for the student role
 ``` http://localhost:8080/api/login POST username="jamessmith" password="password" ```
 #### To obtain an access token for the instructor role
-``` http://localhost:8080/api/login POST username="jamessmith" password="password" ```
+``` http://localhost:8080/api/login POST username="INSTRUCTOR_USERNAME" password="password" ```
 #### To obtain an access token for the registrar role
-``` http://localhost:8080/api/login POST username="jamessmith" password="password" ```
+``` http://localhost:8080/api/login POST username="REGISTRAR_USERNAME" password="password" ```
+
+### To use the access token, include it within the Authorization header
+#### For example,  
+```http GET http://localhost:8080/api/students/1/classes Authorization:"Bearer eyJhbGciOiJIUzI1NiIsImtpZCI6InNpbTIifQ.eyJleHAiOjE3MzU2ODk2MDAsImp0aSI6Im1uYjIzdmNzcnQ3NTZ5dWlvbW5idmN4OThlcnR5dWlvcCIsInJvbGVzIjpbImFkbWluIl19.s5qlgDpy0JkGOQMYq9H1c9pOGYiaqe95KqjJILLSeR4"```
+
+## To see all available endpoints, visit 
+`http://localhost:5300/docs` 
 
 ## to populate the database with some sample data run populate.py
 
