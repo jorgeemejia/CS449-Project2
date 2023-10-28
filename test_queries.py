@@ -63,6 +63,19 @@ def show_users_db(c):
     print('\n'+query)
     select_query(c, query)
 
+    query = "SELECT * FROM users WHERE role='Student' LIMIT 5"
+    print('\n'+query)
+    select_query(c, query)
+
+    query = "SELECT * FROM users WHERE role='Instructor' LIMIT 5"
+    print('\n'+query)
+    select_query(c, query)
+
+    query = "SELECT * FROM users WHERE role='Registrar' LIMIT 5"
+    print('\n'+query)
+    select_query(c, query)
+
+
 
 
 def start():
