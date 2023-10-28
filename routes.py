@@ -27,18 +27,20 @@ database = "database.db"
 users_db = "users.db"
 ALGORITHM = "pbkdf2_sha256"
 
+primary_users_db = "var/primary/fuse/users.db"
+
 # Connect to the database
 def get_db():
     with contextlib.closing(sqlite3.connect(database, check_same_thread=False)) as db:
         db.row_factory = sqlite3.Row
         yield db
 
-# Connect to the users database
-def get_users_db():
-    with contextlib.closing(sqlite3.connect(users_db, check_same_thread=False)) as udb:
-        udb.row_factory = sqlite3.Row
-        yield udb
-
+# Connect to the primary users database
+def get_primary_users_db():
+    with contextlib.closing(sqlite3.connect(primary_users_db, check_same_thread=False)) as db:
+        db.row_factory = sqlite3.Row
+        yield db
+# Function used to hash a password
 def hash_password(password, salt=None, iterations=260000):
     if salt is None:
         salt = secrets.token_hex(16)
@@ -49,7 +51,6 @@ def hash_password(password, salt=None, iterations=260000):
     )
     b64_hash = base64.b64encode(pw_hash).decode("ascii").strip()
     return "{}${}${}${}".format(ALGORITHM, iterations, salt, b64_hash)
-
 
 # Called when a student is dropped from a class / waiting list
 # and the enrollment place must be reordered
@@ -597,7 +598,7 @@ def freeze_automatic_enrollment():
         return {"message": "Automatic enrollment frozen successfully"}
 
 @router.post("/registrar/create/account")
-def register(register: Register, db: sqlite3.Connection = Depends(get_db), udb: sqlite3.Connection = Depends(get_users_db)):
+def register(register: Register, db: sqlite3.Connection = Depends(get_db), udb: sqlite3.Connection = Depends(get_primary_users_db)):
     # First lets check if the 
     cur = udb.execute("SELECT * FROM USERS WHERE username = ?", (register.username,))
     cur2 = db.execute("""SELECT username FROM STUDENT WHERE username = ? UNION SELECT username FROM INSTRUCTOR WHERE username = ?;""", (register.username, register.username))

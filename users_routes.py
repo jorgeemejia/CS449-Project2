@@ -3,6 +3,8 @@ import sqlite3
 import base64
 import hashlib
 import secrets
+import itertools
+import logging
 
 from fastapi import Depends, HTTPException, APIRouter, status
 from schemas import Class
@@ -11,34 +13,42 @@ import json
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings
 
-
 users_router = APIRouter()
 
 database = "users.db"
+primary_users_db = "var/primary/fuse/users.db"
+secondary_users_db_1 = "var/secondary/fuse/users.db"
+secondary_users_db_2 = "var/secondary_2/fuse/users.db"
 enrollmentdb = "database.db"
 
 ALGORITHM = "pbkdf2_sha256"
 
-class Settings(BaseSettings, env_file=".env", extra="ignore"):
-    database: str
+# class Settings(BaseSettings, env_file=".env", extra="ignore"):
+#     database: str
 
 class Login(BaseModel):
     username: str
     password: str
 
 
-# Connect to the database
-def get_users_db():
-    with contextlib.closing(sqlite3.connect(Settings.database, check_same_thread=False)) as db:
+# Connect to the two secondary users databases
+def get_secondary_users_db_1():
+    with contextlib.closing(sqlite3.connect(secondary_users_db_1, check_same_thread=False)) as db:
         db.row_factory = sqlite3.Row
         yield db
 
-# Connect to the database
+def get_secondary_users_db_2():
+    with contextlib.closing(sqlite3.connect(secondary_users_db_2, check_same_thread=False)) as db:
+        db.row_factory = sqlite3.Row
+        yield db
+
+# Connect to the enrollment database
 def get_enrollment_db():
     with contextlib.closing(sqlite3.connect(enrollmentdb, check_same_thread=False)) as edb:
         edb.row_factory = sqlite3.Row
         yield edb
 
+# Function used to hash a password
 def hash_password(password, salt=None, iterations=260000):
     if salt is None:
         salt = secrets.token_hex(16)
@@ -50,7 +60,7 @@ def hash_password(password, salt=None, iterations=260000):
     b64_hash = base64.b64encode(pw_hash).decode("ascii").strip()
     return "{}${}${}${}".format(ALGORITHM, iterations, salt, b64_hash)
 
-# Verify if the password inputted matches the stored hash password when hashed.
+# Funciton two verify a password
 def verify_password(password, password_hash):
     if (password_hash or "").count("$") != 3:
         return False
@@ -62,8 +72,12 @@ def verify_password(password, password_hash):
     # This returns a boolean
     return secrets.compare_digest(password_hash, compare_hash)
 
+# Used to iterate between the two secondary databases
+secondary_users_dbs = [get_secondary_users_db_1, get_secondary_users_db_2]
+cycle_iterator = itertools.cycle(secondary_users_dbs)
+
 @users_router.post("/login")
-def login(login: Login, db: sqlite3.Connection = Depends(get_users_db)):
+def login(login: Login, db: sqlite3.Connection = Depends(next(cycle_iterator))):
 
     cur = db.execute("SELECT * FROM USERS WHERE username = ?", [login.username])
     user = cur.fetchone()
@@ -98,11 +112,9 @@ def login(login: Login, db: sqlite3.Connection = Depends(get_users_db)):
             status_code=status.HTTP_404_NOT_FOUND, detail="User account not found."
         )
 
-
 @users_router.get("/protected")
 def protected():
     return {"message": "JWT Verified, access granted"}
-
 
 
 

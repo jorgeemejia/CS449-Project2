@@ -16,4 +16,5 @@ lease:
 
   candidate: true
 
-exec: "uvicorn --port $PORT main:app --reload"
+# exec: "enrollment_1: uvicorn --port 5300 main:app --reload ; enrollment_2: uvicorn --port 5400 main:app --reload ; enrollment_3: uvicorn --port 5500 main:app --reload"
+
