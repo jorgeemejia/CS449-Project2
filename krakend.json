@@ -7,6 +7,18 @@
             "endpoint": "/api/students/{student_id}/classes",
             "method": "GET",
             "output_encoding": "no-op",
+            "extra_config": {
+                "auth/validator": {
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "student"
+                    ],
+                    "jwk_local_path": "symmetric.json",
+                    "cache": false,
+                    "disable_jwk_security": true
+                }
+            },
             "backend": [
                 {
                     "url_pattern": "/students/{student_id}/classes",
@@ -29,6 +41,18 @@
             "endpoint": "/api/students/{student_id}/enrolled",
             "method": "GET",
             "output_encoding": "no-op",
+            "extra_config": {
+                "auth/validator": {
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "student"
+                    ],
+                    "jwk_local_path": "symmetric.json",
+                    "cache": false,
+                    "disable_jwk_security": true
+                }
+            },
             "backend": [
                 {
                     "url_pattern": "/students/{student_id}/enrolled",
@@ -51,6 +75,18 @@
             "endpoint": "/api/students/{student_id}/classes/{class_id}/enroll",
             "method": "POST",
             "output_encoding": "no-op",
+            "extra_config": {
+                "auth/validator": {
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "student"
+                    ],
+                    "jwk_local_path": "symmetric.json",
+                    "cache": false,
+                    "disable_jwk_security": true
+                }
+            },
             "backend": [
                 {
                     "url_pattern": "/students/{student_id}/classes/{class_id}/enroll",
@@ -73,6 +109,18 @@
             "endpoint": "/api/students/{student_id}/classes/{class_id}/drop/",
             "method": "PUT",
             "output_encoding": "no-op",
+            "extra_config": {
+                "auth/validator": {
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "student"
+                    ],
+                    "jwk_local_path": "symmetric.json",
+                    "cache": false,
+                    "disable_jwk_security": true
+                }
+            },
             "backend": [
                 {
                     "url_pattern": "/students/{student_id}/classes/{class_id}/drop/",
@@ -95,6 +143,18 @@
             "endpoint": "/api/waitlist/classes",
             "method": "GET",
             "output_encoding": "no-op",
+            "extra_config": {
+                "auth/validator": {
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "student"
+                    ],
+                    "jwk_local_path": "symmetric.json",
+                    "cache": false,
+                    "disable_jwk_security": true
+                }
+            },
             "backend": [
                 {
                     "url_pattern": "/waitlist/classes",
@@ -117,6 +177,18 @@
             "endpoint": "/api/waitlist/students/{student_id}",
             "method": "GET",
             "output_encoding": "no-op",
+            "extra_config": {
+                "auth/validator": {
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "student"
+                    ],
+                    "jwk_local_path": "symmetric.json",
+                    "cache": false,
+                    "disable_jwk_security": true
+                }
+            },
             "backend": [
                 {
                     "url_pattern": "/waitlist/students/{student_id}",
@@ -139,6 +211,18 @@
             "endpoint": "/api/waitlist/students/{student_id}/classes/{class_id}/drop",
             "method": "PUT",
             "output_encoding": "no-op",
+            "extra_config": {
+                "auth/validator": {
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "student"
+                    ],
+                    "jwk_local_path": "symmetric.json",
+                    "cache": false,
+                    "disable_jwk_security": true
+                }
+            },
             "backend": [
                 {
                     "url_pattern": "/waitlist/students/{student_id}/classes/{class_id}/drop",
@@ -161,6 +245,18 @@
             "endpoint": "/api/waitlist/instructors/{instructor_id}/classes/{class_id}",
             "method": "GET",
             "output_encoding": "no-op",
+            "extra_config": {
+                "auth/validator": {
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "instructor"
+                    ],
+                    "jwk_local_path": "symmetric.json",
+                    "cache": false,
+                    "disable_jwk_security": true
+                }
+            },
             "backend": [
                 {
                     "url_pattern": "/waitlist/instructors/{instructor_id}/classes/{class_id}",
@@ -183,6 +279,18 @@
             "endpoint": "/api/instructors/{instructor_id}/classes/{class_id}/enrollment",
             "method": "GET",
             "output_encoding": "no-op",
+            "extra_config": {
+                "auth/validator": {
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "instructor"
+                    ],
+                    "jwk_local_path": "symmetric.json",
+                    "cache": false,
+                    "disable_jwk_security": true
+                }
+            },
             "backend": [
                 {
                     "url_pattern": "/instructors/{instructor_id}/classes/{class_id}/enrollment",
@@ -205,6 +313,18 @@
             "endpoint": "/api/instructors/{instructor_id}/classes/{class_id}/drop",
             "method": "GET",
             "output_encoding": "no-op",
+            "extra_config": {
+                "auth/validator": {
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "instructor"
+                    ],
+                    "jwk_local_path": "symmetric.json",
+                    "cache": false,
+                    "disable_jwk_security": true
+                }
+            },
             "backend": [
                 {
                     "url_pattern": "/instructors/{instructor_id}/classes/{class_id}/drop",
@@ -227,6 +347,18 @@
             "endpoint": "/api/instructors/{instructor_id}/classes/{class_id}/students/{student_id}/drop",
             "method": "POST",
             "output_encoding": "no-op",
+            "extra_config": {
+                "auth/validator": {
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "instructor"
+                    ],
+                    "jwk_local_path": "symmetric.json",
+                    "cache": false,
+                    "disable_jwk_security": true
+                }
+            },
             "backend": [
                 {
                     "url_pattern": "/instructors/{instructor_id}/classes/{class_id}/students/{student_id}/drop",
@@ -249,6 +381,18 @@
             "endpoint": "/api/registrar/classes/",
             "method": "POST",
             "output_encoding": "no-op",
+            "extra_config": {
+                "auth/validator": {
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "registrar"
+                    ],
+                    "jwk_local_path": "symmetric.json",
+                    "cache": false,
+                    "disable_jwk_security": true
+                }
+            },
             "backend": [
                 {
                     "url_pattern": "/registrar/classes/",
@@ -271,6 +415,18 @@
             "endpoint": "/api/registrar/classes/{class_id}",
             "method": "DELETE",
             "output_encoding": "no-op",
+            "extra_config": {
+                "auth/validator": {
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "registrar"
+                    ],
+                    "jwk_local_path": "symmetric.json",
+                    "cache": false,
+                    "disable_jwk_security": true
+                }
+            },
             "backend": [
                 {
                     "url_pattern": "/registrar/classes/{class_id}",
@@ -293,6 +449,18 @@
             "endpoint": "/api/registrar/classes/{class_id}/instructors/{instructor_id}",
             "method": "PUT",
             "output_encoding": "no-op",
+            "extra_config": {
+                "auth/validator": {
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "registrar"
+                    ],
+                    "jwk_local_path": "symmetric.json",
+                    "cache": false,
+                    "disable_jwk_security": true
+                }
+            },
             "backend": [
                 {
                     "url_pattern": "/registrar/classes/{class_id}/instructors/{instructor_id}",
@@ -315,6 +483,18 @@
             "endpoint": "/api/registrar/automatic-enrollment/freeze",
             "method": "PUT",
             "output_encoding": "no-op",
+            "extra_config": {
+                "auth/validator": {
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "registrar"
+                    ],
+                    "jwk_local_path": "symmetric.json",
+                    "cache": false,
+                    "disable_jwk_security": true
+                }
+            },
             "backend": [
                 {
                     "url_pattern": "/registrar/automatic-enrollment/freeze",
@@ -339,7 +519,7 @@
             "output_encoding": "json",
             "extra_config": {
                 "auth/signer": {
-                    "alg": "HS256",
+                    "alg": "RS256",
                     "jwk_local_path": "symmetric.json",
                     "keys_to_sign": [
                         "access_token",
@@ -372,7 +552,7 @@
             "method": "GET",
             "extra_config": {
                 "auth/validator": {
-                    "alg": "HS256",
+                    "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
                         "admin"
